@@ -1,0 +1,426 @@
+// =====================================================================
+// Mantenimiento2 - Prisma schema
+// PostgreSQL 16 / Prisma 5
+// =====================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// IAM - Usuarios, roles y permisos
+// =====================================================================
+
+enum UserRole {
+  ADMIN
+  SUPERVISOR
+  TECHNICIAN
+  OPERATOR
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+/// Espejo del usuario de Clerk. La verdad de identidad vive en Clerk;
+/// aquí guardamos el perfil de aplicación, el rol y el tenant.
+model User {
+  id          String     @id @default(uuid()) @db.Uuid
+  clerkUserId String     @unique @map("clerk_user_id")
+  email       String     @unique @db.Citext
+  firstName   String?    @map("first_name")
+  lastName    String?    @map("last_name")
+  avatarUrl   String?    @map("avatar_url")
+  role        UserRole   @default(OPERATOR)
+  status      UserStatus @default(ACTIVE)
+
+  // Multi-tenant (preparado, no activo)
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relaciones inversas
+  toolLoans               ToolLoan[]              @relation("ToolLoanResponsible")
+  stockMovementsCreated   StockMovement[]         @relation("StockMovementCreatedBy")
+  machinesAssigned        Machine[]               @relation("MachineResponsible")
+  maintenancesAsTechnician MaintenanceOrder[]     @relation("MaintenanceTechnician")
+  auditLogs               AuditLog[]              @relation("AuditLogActor")
+
+  @@index([tenantId])
+  @@index([role])
+  @@index([status])
+  @@map("users")
+}
+
+// =====================================================================
+// TOOLS - Herramientas (identidad individual, sin stock)
+// =====================================================================
+
+enum ToolStatus {
+  AVAILABLE
+  ON_LOAN
+  IN_REPAIR
+  OUT_OF_SERVICE
+}
+
+model Tool {
+  id              String     @id @default(uuid()) @db.Uuid
+  /// Identificador legible único (SKU/Código interno)
+  code            String     @unique
+  name            String
+  description     String?
+  brand           String?
+  model           String?
+  serialNumber    String?    @unique @map("serial_number")
+  status          ToolStatus @default(AVAILABLE)
+  location        String?
+  observations    String?
+  acquiredAt      DateTime?  @map("acquired_at")
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  loans ToolLoan[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([name])
+  @@map("tools")
+}
+
+enum ToolLoanStatus {
+  ACTIVE
+  RETURNED
+  LOST
+}
+
+model ToolLoan {
+  id            String         @id @default(uuid()) @db.Uuid
+  toolId        String         @map("tool_id") @db.Uuid
+  responsibleId String         @map("responsible_id") @db.Uuid
+  loanedAt      DateTime       @default(now()) @map("loaned_at")
+  expectedAt    DateTime?      @map("expected_at")
+  returnedAt    DateTime?      @map("returned_at")
+  status        ToolLoanStatus @default(ACTIVE)
+  notes         String?
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  tool        Tool @relation(fields: [toolId], references: [id], onDelete: Restrict)
+  responsible User @relation("ToolLoanResponsible", fields: [responsibleId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([toolId])
+  @@index([responsibleId])
+  @@index([status])
+  @@index([tenantId])
+  @@map("tool_loans")
+}
+
+// =====================================================================
+// MATERIALS - Materiales con stock y movimientos
+// =====================================================================
+
+enum MaterialUnit {
+  UNIT
+  KILOGRAM
+  GRAM
+  LITER
+  MILLILITER
+  METER
+  CENTIMETER
+  BOX
+  PACK
+}
+
+model Material {
+  id          String       @id @default(uuid()) @db.Uuid
+  code        String       @unique
+  name        String
+  description String?
+  unit        MaterialUnit @default(UNIT)
+  /// Cantidad actual en stock. Se actualiza por movimientos, nunca negativa.
+  stock       Decimal      @default(0) @db.Decimal(14, 4)
+  /// Umbral de alerta por stock bajo
+  minStock    Decimal      @default(0) @map("min_stock") @db.Decimal(14, 4)
+  location    String?
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  movements StockMovement[]
+
+  @@index([tenantId])
+  @@index([name])
+  @@map("materials")
+}
+
+enum StockMovementType {
+  INBOUND   // Entrada
+  OUTBOUND  // Salida
+  ADJUSTMENT
+  CONSUMPTION
+}
+
+model StockMovement {
+  id          String            @id @default(uuid()) @db.Uuid
+  materialId  String            @map("material_id") @db.Uuid
+  type        StockMovementType
+  /// Cantidad del movimiento (siempre positiva; el tipo define el signo aplicado)
+  quantity    Decimal           @db.Decimal(14, 4)
+  /// Stock resultante tras aplicar el movimiento (snapshot inmutable)
+  stockAfter  Decimal           @map("stock_after") @db.Decimal(14, 4)
+  reason      String?
+  reference   String?           // Nro de remito, OT, etc.
+  createdById String            @map("created_by_id") @db.Uuid
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  material  Material @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  createdBy User     @relation("StockMovementCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([materialId])
+  @@index([createdById])
+  @@index([type])
+  @@index([createdAt])
+  @@index([tenantId])
+  @@map("stock_movements")
+}
+
+// =====================================================================
+// MACHINES - Máquinas
+// =====================================================================
+
+enum MachineStatus {
+  OPERATIONAL
+  INTERNAL_MAINTENANCE
+  EXTERNAL_MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+model Machine {
+  id            String        @id @default(uuid()) @db.Uuid
+  code          String        @unique
+  name          String
+  brand         String?
+  model         String?
+  serialNumber  String?       @unique @map("serial_number")
+  status        MachineStatus @default(OPERATIONAL)
+  /// Horas acumuladas de uso (lectura corriente)
+  usageHours    Decimal       @default(0) @map("usage_hours") @db.Decimal(12, 2)
+  location      String?
+  responsibleId String?       @map("responsible_id") @db.Uuid
+  notes         String?
+
+  /// Intervalo de mantenimiento preventivo en horas (null = sin alerta)
+  preventiveIntervalHours Decimal? @map("preventive_interval_hours") @db.Decimal(12, 2)
+  /// Horas registradas en el último mantenimiento preventivo
+  lastPreventiveAtHours   Decimal? @map("last_preventive_at_hours") @db.Decimal(12, 2)
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  responsible       User?              @relation("MachineResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+  maintenanceOrders MaintenanceOrder[]
+  usageLogs         MachineUsageLog[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([responsibleId])
+  @@index([name])
+  @@map("machines")
+}
+
+/// Registros incrementales de horas de uso (auditoría del contador)
+model MachineUsageLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  machineId   String   @map("machine_id") @db.Uuid
+  hoursBefore Decimal  @map("hours_before") @db.Decimal(12, 2)
+  hoursAfter  Decimal  @map("hours_after") @db.Decimal(12, 2)
+  delta       Decimal  @db.Decimal(12, 2)
+  notes       String?
+  createdById String   @map("created_by_id") @db.Uuid
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  machine Machine @relation(fields: [machineId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([machineId])
+  @@index([createdAt])
+  @@map("machine_usage_logs")
+}
+
+// =====================================================================
+// MAINTENANCE - Mantenimientos
+// =====================================================================
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceLocation {
+  INTERNAL
+  EXTERNAL
+}
+
+model MaintenanceOrder {
+  id               String              @id @default(uuid()) @db.Uuid
+  machineId        String              @map("machine_id") @db.Uuid
+  type             MaintenanceType
+  status           MaintenanceStatus   @default(SCHEDULED)
+  location         MaintenanceLocation @default(INTERNAL)
+  externalLocation String?             @map("external_location")
+
+  scheduledFor DateTime? @map("scheduled_for")
+  startedAt    DateTime? @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+
+  /// Lectura del contador de horas al momento del mantenimiento
+  machineHoursSnapshot Decimal? @map("machine_hours_snapshot") @db.Decimal(12, 2)
+
+  technicianId String? @map("technician_id") @db.Uuid
+  providerId   String? @map("provider_id") @db.Uuid
+
+  cost        Decimal? @db.Decimal(14, 2)
+  currency    String?  @default("ARS") @db.VarChar(8)
+  description String?
+  observations String?
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  machine    Machine   @relation(fields: [machineId], references: [id], onDelete: Restrict)
+  technician User?     @relation("MaintenanceTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+  provider   Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+
+  @@index([machineId])
+  @@index([technicianId])
+  @@index([providerId])
+  @@index([status])
+  @@index([type])
+  @@index([scheduledFor])
+  @@index([tenantId])
+  @@map("maintenance_orders")
+}
+
+// =====================================================================
+// PROVIDERS - Proveedores
+// =====================================================================
+
+enum ProviderServiceType {
+  MAINTENANCE
+  PARTS
+  TOOLS
+  MATERIALS
+  CONSULTING
+  OTHER
+}
+
+model Provider {
+  id          String              @id @default(uuid()) @db.Uuid
+  name        String
+  taxId       String?             @unique @map("tax_id")
+  contactName String?             @map("contact_name")
+  phone       String?
+  email       String?             @db.Citext
+  address     String?
+  serviceType ProviderServiceType @default(MAINTENANCE) @map("service_type")
+  notes       String?
+  active      Boolean             @default(true)
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  maintenanceOrders MaintenanceOrder[]
+
+  @@index([tenantId])
+  @@index([serviceType])
+  @@index([active])
+  @@map("providers")
+}
+
+// =====================================================================
+// AUDIT - Auditoría automática
+// =====================================================================
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATE_CHANGE
+  STOCK_MOVEMENT
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+  PERMISSION_CHANGE
+}
+
+model AuditLog {
+  id         String      @id @default(uuid()) @db.Uuid
+  /// Usuario que disparó la acción (null si fue un job/sistema)
+  actorId    String?     @map("actor_id") @db.Uuid
+  action     AuditAction
+  /// Nombre de la entidad de dominio afectada (e.g. "Machine", "Material")
+  entityType String      @map("entity_type")
+  /// ID de la entidad afectada (string para soportar diferentes tipos)
+  entityId   String?     @map("entity_id")
+  /// Snapshot serializado: { before?: any, after?: any, diff?: any, metadata?: any }
+  payload    Json?
+
+  ipAddress String? @map("ip_address")
+  userAgent String? @map("user_agent")
+  requestId String? @map("request_id")
+
+  tenantId String? @map("tenant_id") @db.Uuid
+
+  actor User? @relation("AuditLogActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([tenantId])
+  @@map("audit_logs")
+}
