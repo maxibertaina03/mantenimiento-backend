@@ -6,7 +6,10 @@ export interface AuthenticatedUser {
   id: string;
   /** ID en Clerk (tabla externa) */
   clerkUserId: string;
-  email: string;
+  /** Identificador legible. Si Clerk está configurado con username + password, es el username. */
+  username: string | null;
+  /** Email — null si la instancia de Clerk no expone email. */
+  email: string | null;
   role: UserRole;
   tenantId: string | null;
 }

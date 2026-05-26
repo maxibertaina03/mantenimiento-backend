@@ -4,12 +4,16 @@ import { InvariantError } from '@/common/exceptions/domain.exception';
 /**
  * Entidad de dominio User. Pura: no conoce Prisma ni HTTP.
  * Encapsula invariantes que la base de datos sola no puede garantizar.
+ *
+ * `username` y `email` son ambos opcionales — al menos uno debe estar presente
+ * (validado en infraestructura al sincronizar con Clerk).
  */
 export class User {
   private constructor(
     public readonly id: string,
     public readonly clerkUserId: string,
-    private _email: string,
+    private _username: string | null,
+    private _email: string | null,
     private _firstName: string | null,
     private _lastName: string | null,
     private _avatarUrl: string | null,
@@ -20,7 +24,10 @@ export class User {
     public readonly updatedAt: Date,
   ) {}
 
-  get email(): string {
+  get username(): string | null {
+    return this._username;
+  }
+  get email(): string | null {
     return this._email;
   }
   get firstName(): string | null {
@@ -38,13 +45,19 @@ export class User {
   get status(): UserStatus {
     return this._status;
   }
+
+  /** Mejor representación legible: full name → username → email → fallback "Usuario". */
   get fullName(): string {
-    return [this._firstName, this._lastName].filter(Boolean).join(' ').trim() || this._email;
+    const fromName = [this._firstName, this._lastName].filter(Boolean).join(' ').trim();
+    return fromName || this._username || this._email || 'Usuario';
   }
 
   changeRole(role: UserRole): void {
     if (this._status !== 'ACTIVE') {
-      throw new InvariantError('USER_NOT_ACTIVE', 'No se puede cambiar el rol de un usuario inactivo');
+      throw new InvariantError(
+        'USER_NOT_ACTIVE',
+        'No se puede cambiar el rol de un usuario inactivo',
+      );
     }
     this._role = role;
   }
@@ -62,7 +75,8 @@ export class User {
   static rehydrate(props: {
     id: string;
     clerkUserId: string;
-    email: string;
+    username: string | null;
+    email: string | null;
     firstName: string | null;
     lastName: string | null;
     avatarUrl: string | null;
@@ -75,6 +89,7 @@ export class User {
     return new User(
       props.id,
       props.clerkUserId,
+      props.username,
       props.email,
       props.firstName,
       props.lastName,

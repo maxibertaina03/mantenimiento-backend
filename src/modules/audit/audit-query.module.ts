@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 
+import { AuditLogsController } from './presentation/audit-logs.controller';
+import { ListAuditLogsUseCase } from './application/list-audit-logs.use-case';
+
 /**
- * TODO (Fase 2 - Audit query):
- *  - application/                     (ListAuditLogs con filtros: entityType, entityId, actorId, action, dateRange)
- *  - infrastructure/prisma-audit-log.repository.ts
- *  - presentation/audit-logs.controller.ts (read-only, restringido a ADMIN/SUPERVISOR)
- *
- * La ESCRITURA vive en `infrastructure/audit/audit.writer.ts` (transversal).
- * Este módulo expone únicamente las queries/lecturas hacia los clientes.
+ * Bounded context Audit (read side). La escritura vive en
+ * `infrastructure/audit/audit.writer.ts` (transversal a todos los módulos).
  */
-@Module({})
+@Module({
+  controllers: [AuditLogsController],
+  providers: [ListAuditLogsUseCase],
+})
 export class AuditQueryModule {}

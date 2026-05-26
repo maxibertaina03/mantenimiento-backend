@@ -11,7 +11,8 @@ export interface ClerkSession {
 
 export interface ClerkUserSnapshot {
   id: string;
-  email: string;
+  username: string | null;
+  email: string | null;
   firstName: string | null;
   lastName: string | null;
   imageUrl: string | null;
@@ -53,16 +54,29 @@ export class ClerkService {
     }
   }
 
+  /**
+   * Trae el snapshot del usuario desde Clerk. La instancia puede estar
+   * configurada con username + password únicamente (sin email), por eso ambos
+   * campos son nullable y se cae con UnauthorizedError sólo si no hay NINGÚN
+   * identificador (ni username ni email) — escenario imposible en una config
+   * sana, pero defensivo igual.
+   */
   async getUser(clerkUserId: string): Promise<ClerkUserSnapshot> {
     const u = await this.client.users.getUser(clerkUserId);
     const email =
       u.emailAddresses.find((e) => e.id === u.primaryEmailAddressId)?.emailAddress ??
-      u.emailAddresses[0]?.emailAddress;
-    if (!email) {
-      throw new UnauthorizedError('NO_EMAIL', 'El usuario de Clerk no tiene email');
+      u.emailAddresses[0]?.emailAddress ??
+      null;
+    const username = u.username ?? null;
+    if (!username && !email) {
+      throw new UnauthorizedError(
+        'NO_IDENTIFIER',
+        'El usuario de Clerk no tiene ni username ni email',
+      );
     }
     return {
       id: u.id,
+      username,
       email,
       firstName: u.firstName,
       lastName: u.lastName,

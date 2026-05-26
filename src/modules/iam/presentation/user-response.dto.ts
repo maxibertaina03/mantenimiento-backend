@@ -6,8 +6,11 @@ export class UserResponseDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
 
-  @ApiProperty({ format: 'email' })
-  email!: string;
+  @ApiProperty({ nullable: true })
+  username!: string | null;
+
+  @ApiProperty({ format: 'email', nullable: true })
+  email!: string | null;
 
   @ApiProperty({ nullable: true })
   firstName!: string | null;
@@ -33,6 +36,7 @@ export class UserResponseDto {
   static from(u: User): UserResponseDto {
     return {
       id: u.id,
+      username: u.username,
       email: u.email,
       firstName: u.firstName,
       lastName: u.lastName,

@@ -49,6 +49,7 @@ export class PrismaUserRepository implements UserRepository {
     return User.rehydrate({
       id: row.id,
       clerkUserId: row.clerkUserId,
+      username: row.username,
       email: row.email,
       firstName: row.firstName,
       lastName: row.lastName,

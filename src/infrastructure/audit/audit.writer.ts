@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import type { AuditAction, Prisma } from '@prisma/client';
 import { PrismaService } from '@/infrastructure/prisma/prisma.service';
 
@@ -8,27 +7,16 @@ export interface AuditEntry {
   action: AuditAction;
   entityType: string;
   entityId?: string;
-  payload?: Prisma.InputJsonValue | null;
+  payload?: Record<string, unknown> | unknown | null;
   ipAddress?: string | null;
   userAgent?: string | null;
   requestId?: string | null;
   tenantId?: string | null;
 }
 
-/**
- * Punto de entrada único para escribir en `audit_logs`. Diseñado para:
- *  - Llamadas explícitas desde Use Cases (`auditWriter.write({...})`).
- *  - Llamadas implícitas desde `AuditInterceptor` (declarativo).
- *
- * Encapsula errores: si la auditoría falla, NO debe romper la operación principal
- * — se loggea y se sigue. (En producción esto idealmente va a una cola.)
- */
 @Injectable()
 export class AuditWriter {
-  constructor(
-    private readonly prisma: PrismaService,
-    @InjectPinoLogger(AuditWriter.name) private readonly logger: PinoLogger,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async write(entry: AuditEntry): Promise<void> {
     try {
@@ -38,7 +26,7 @@ export class AuditWriter {
           action: entry.action,
           entityType: entry.entityType,
           entityId: entry.entityId ?? null,
-          payload: entry.payload ?? undefined,
+          payload: (entry.payload as Prisma.InputJsonValue) ?? undefined,
           ipAddress: entry.ipAddress ?? null,
           userAgent: entry.userAgent ?? null,
           requestId: entry.requestId ?? null,
@@ -46,7 +34,7 @@ export class AuditWriter {
         },
       });
     } catch (err) {
-      this.logger.error({ err, entry }, 'Fallo escribiendo audit log');
+      console.error('Error writing audit log:', err, entry);
     }
   }
 }

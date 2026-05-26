@@ -2,14 +2,10 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { appConfig } from '@/config';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor(
-    cs: ConfigService,
-    @InjectPinoLogger(PrismaService.name) private readonly logger: PinoLogger,
-  ) {
+  constructor(cs: ConfigService) {
     const cfg = appConfig(cs);
     super({
       datasources: { db: { url: cfg.database.url } },
@@ -27,7 +23,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit(): Promise<void> {
     await this.$connect();
-    this.logger.info('PrismaService connected');
+    console.log('[PrismaService] connected');
   }
 
   async onModuleDestroy(): Promise<void> {

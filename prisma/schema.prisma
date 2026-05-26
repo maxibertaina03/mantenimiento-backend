@@ -5,7 +5,7 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearchPostgres"]
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -35,7 +35,10 @@ enum UserStatus {
 model User {
   id          String     @id @default(uuid()) @db.Uuid
   clerkUserId String     @unique @map("clerk_user_id")
-  email       String     @unique @db.Citext
+  /// Identificador legible y unique (lo expone Clerk en el JWT). Es el principal.
+  username    String?    @unique @db.Citext
+  /// Email opcional. Si la instancia de Clerk no expone email, queda null.
+  email       String?    @unique @db.Citext
   firstName   String?    @map("first_name")
   lastName    String?    @map("last_name")
   avatarUrl   String?    @map("avatar_url")

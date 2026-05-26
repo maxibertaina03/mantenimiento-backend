@@ -23,6 +23,7 @@ import { MachinesModule } from './modules/machines/machines.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { ProvidersModule } from './modules/providers/providers.module';
 import { AuditQueryModule } from './modules/audit/audit-query.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { AuditQueryModule } from './modules/audit/audit-query.module';
     MaintenanceModule,
     ProvidersModule,
     AuditQueryModule,
+    DashboardModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
