@@ -23,7 +23,22 @@ cd mantenimiento-backend
 
 ## 🗄️ Paso 2: Configurar Base de Datos con Docker
 
-### Opción A: Usar Docker (Recomendado)
+### Opción A: Usar Docker Compose (⭐ MÁS FÁCIL)
+
+```powershell
+# Desde backend/, inicia PostgreSQL con todo configurado
+docker-compose up -d
+```
+
+**¡Eso es todo!** El archivo `docker-compose.yml` maneja:
+- ✅ PostgreSQL 16 Alpine
+- ✅ Base de datos `mantenimiento`
+- ✅ Usuario/password `mantenimiento`
+- ✅ Extensión CITEXT automáticamente
+- ✅ Health checks
+- ✅ Persistencia de datos
+
+### Opción B: Docker Manual
 
 ```powershell
 # Inicia PostgreSQL en Docker
@@ -43,7 +58,7 @@ docker run -d `
 docker exec mantenimiento2-postgres psql -U mantenimiento -d mantenimiento -c "CREATE EXTENSION IF NOT EXISTS citext"
 ```
 
-### Opción B: PostgreSQL Local (Windows)
+### Opción C: PostgreSQL Local (Windows)
 
 Si tienes PostgreSQL instalado localmente:
 1. Crea una base de datos llamada `mantenimiento`
