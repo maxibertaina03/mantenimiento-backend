@@ -1,0 +1,266 @@
+ESTRUCTURA RECOMENDADA - Mantenimiento2 Backend
+================================================
+
+src/
+│
+├── config/
+│   ├── app.config.ts              # Configuración centralizada
+│   └── database.config.ts
+│
+├── common/                         # Shared en toda la app
+│   ├── decorators/
+│   │   ├── current-user.decorator.ts
+│   │   └── roles.decorator.ts
+│   ├── guards/
+│   │   ├── clerk-auth.guard.ts
+│   │   ├── roles.guard.ts
+│   │   └── tenant.guard.ts
+│   ├── interceptors/
+│   │   ├── audit.interceptor.ts
+│   │   ├── logging.interceptor.ts
+│   │   └── error-handling.interceptor.ts
+│   ├── filters/
+│   │   └── http-exception.filter.ts
+│   ├── pipes/
+│   │   ├── validation.pipe.ts
+│   │   └── parse-uuid.pipe.ts
+│   └── exceptions/
+│       ├── app.exception.ts
+│       ├── validation.exception.ts
+│       └── not-found.exception.ts
+│
+├── infrastructure/                 # Infraestructura transversal
+│   ├── prisma/
+│   │   ├── prisma.service.ts
+│   │   └── prisma.module.ts
+│   ├── clerk/
+│   │   ├── clerk.service.ts
+│   │   ├── user-sync.service.ts
+│   │   └── clerk.module.ts
+│   ├── logger/
+│   │   ├── logger.module.ts
+│   │   └── logger.service.ts
+│   ├── audit/
+│   │   ├── audit.writer.ts
+│   │   ├── audit.module.ts
+│   │   └── audit.interceptor.ts
+│   └── cache/
+│       ├── cache.service.ts
+│       └── cache.module.ts
+│
+├── shared/                         # Código reutilizable
+│   ├── dtos/
+│   │   ├── common/
+│   │   │   ├── pagination.dto.ts
+│   │   │   ├── api-response.dto.ts
+│   │   │   ├── filter.dto.ts
+│   │   │   ├── sort.dto.ts
+│   │   │   └── search.dto.ts
+│   │   ├── enums/
+│   │   │   ├── sort-order.enum.ts
+│   │   │   └── pagination.enum.ts
+│   │   └── mappers/
+│   │       └── dto.mapper.ts
+│   ├── types/
+│   │   ├── index.ts
+│   │   └── common.types.ts
+│   ├── utils/
+│   │   ├── uuid.util.ts
+│   │   ├── date.util.ts
+│   │   └── validator.util.ts
+│   ├── api/
+│   │   └── api-client.ts
+│   ├── hooks/
+│   │   └── use-pagination.ts
+│   └── constants/
+│       └── app.constants.ts
+│
+└── modules/                        # BOUNDED CONTEXTS (DDD)
+    │
+    ├── machines/
+    │   │
+    │   ├── domain/                 # LÓGICA DE NEGOCIO PURA
+    │   │   ├── entities/
+    │   │   │   └── machine.entity.ts
+    │   │   ├── value-objects/
+    │   │   │   ├── machine-status.vo.ts
+    │   │   │   └── machine-code.vo.ts
+    │   │   ├── repositories/
+    │   │   │   └── machine.repository.ts    # Interfaz (contrato)
+    │   │   ├── services/
+    │   │   │   └── machine-domain.service.ts
+    │   │   └── exceptions/
+    │   │       ├── invalid-machine-code.exception.ts
+    │   │       └── machine-not-found.exception.ts
+    │   │
+    │   ├── application/             # ORQUESTACIÓN
+    │   │   ├── use-cases/
+    │   │   │   ├── create-machine/
+    │   │   │   │   ├── create-machine.use-case.ts
+    │   │   │   │   ├── create-machine.input.ts
+    │   │   │   │   └── create-machine.output.ts
+    │   │   │   ├── list-machines/
+    │   │   │   │   ├── list-machines.use-case.ts
+    │   │   │   │   ├── list-machines.input.ts
+    │   │   │   │   └── list-machines.output.ts
+    │   │   │   ├── get-machine/
+    │   │   │   ├── update-machine/
+    │   │   │   └── delete-machine/
+    │   │   ├── dtos/
+    │   │   │   ├── machine.input.dto.ts
+    │   │   │   └── machine.output.dto.ts
+    │   │   ├── mappers/
+    │   │   │   └── machine.app-mapper.ts
+    │   │   └── services/
+    │   │       └── machine.app-service.ts
+    │   │
+    │   ├── infrastructure/          # PERSISTENCIA
+    │   │   ├── repositories/
+    │   │   │   └── prisma-machine.repository.ts  # Implementación
+    │   │   ├── persistence/
+    │   │   │   └── machine.schema.ts    # (definido en prisma/schema.prisma)
+    │   │   └── mappers/
+    │   │       └── prisma-machine.mapper.ts
+    │   │
+    │   ├── presentation/            # API REST
+    │   │   ├── controllers/
+    │   │   │   └── machines.controller.ts
+    │   │   ├── dtos/
+    │   │   │   ├── create-machine.request.dto.ts
+    │   │   │   ├── update-machine.request.dto.ts
+    │   │   │   ├── list-machines.query.dto.ts
+    │   │   │   └── machine.response.dto.ts
+    │   │   ├── middlewares/
+    │   │   │   ├── machine-validation.middleware.ts
+    │   │   │   └── machine-auth.middleware.ts
+    │   │   ├── pipes/
+    │   │   │   └── create-machine-validation.pipe.ts
+    │   │   ├── routes/
+    │   │   │   └── machine.routes.ts
+    │   │   ├── decorators/
+    │   │   │   └── machine.decorators.ts
+    │   │   └── filters/
+    │   │       └── machine-exception.filter.ts
+    │   │
+    │   ├── test/
+    │   │   ├── machine.entity.spec.ts
+    │   │   ├── machine-domain.service.spec.ts
+    │   │   ├── create-machine.use-case.spec.ts
+    │   │   └── machines.controller.spec.ts
+    │   │
+    │   └── machines.module.ts       # NestJS Module (une todo)
+    │
+    ├── tools/
+    │   ├── domain/
+    │   ├── application/
+    │   ├── infrastructure/
+    │   ├── presentation/
+    │   ├── test/
+    │   └── tools.module.ts
+    │
+    ├── materials/
+    │   ├── domain/
+    │   ├── application/
+    │   ├── infrastructure/
+    │   ├── presentation/
+    │   ├── test/
+    │   └── materials.module.ts
+    │
+    ├── maintenance/
+    │   ├── domain/
+    │   ├── application/
+    │   ├── infrastructure/
+    │   ├── presentation/
+    │   ├── test/
+    │   └── maintenance.module.ts
+    │
+    ├── providers/
+    │   ├── domain/
+    │   ├── application/
+    │   ├── infrastructure/
+    │   ├── presentation/
+    │   ├── test/
+    │   └── providers.module.ts
+    │
+    ├── iam/
+    │   ├── domain/
+    │   ├── application/
+    │   ├── infrastructure/
+    │   ├── presentation/
+    │   ├── test/
+    │   └── iam.module.ts
+    │
+    ├── audit/
+    │   ├── domain/
+    │   ├── application/
+    │   ├── infrastructure/
+    │   ├── presentation/
+    │   ├── test/
+    │   └── audit.module.ts
+    │
+    └── dashboard/
+        ├── domain/
+        ├── application/
+        ├── infrastructure/
+        ├── presentation/
+        ├── test/
+        └── dashboard.module.ts
+│
+├── app.module.ts                   # Root Module
+├── main.ts                         # Entry point
+└── health/                         # Health checks
+    └── health.module.ts
+
+
+DIAGRAMA DE DEPENDENCIAS
+========================
+
+┌─────────────────────────────────────────┐
+│         PRESENTATION LAYER              │
+│  (Controllers, DTOs, Middlewares)       │
+└──────────────────┬──────────────────────┘
+                   │ Depends on
+                   ▼
+┌─────────────────────────────────────────┐
+│        APPLICATION LAYER                │
+│  (Use Cases, App Services, Mappers)     │
+└──────────────────┬──────────────────────┘
+                   │ Depends on
+                   ▼
+┌─────────────────────────────────────────┐
+│           DOMAIN LAYER                  │
+│  (Entities, Value Objects, Services)    │
+└──────────────────┬──────────────────────┘
+                   │ Depends on (via interfaces)
+                   ▼
+┌─────────────────────────────────────────┐
+│       INFRASTRUCTURE LAYER              │
+│  (Repository Implementations, DB)       │
+└─────────────────────────────────────────┘
+
+NOTAS IMPORTANTES
+=================
+
+✅ DOMAIN: NO depende de nada (standalone)
+✅ APPLICATION: Solo depende de DOMAIN
+✅ INFRASTRUCTURE: Implementa interfaces de DOMAIN
+✅ PRESENTATION: Orquesta APPLICATION
+
+❌ Nunca importar desde presentation a infrastructure
+❌ Nunca importar servicios de otro módulo directamente
+❌ Siempre usar interfaces (contratos) del domain
+
+NOMENCLATURA
+============
+
+Entities:       {Nombre}.entity.ts
+Value Objects:  {Nombre}.vo.ts
+Repositories:   {Nombre}.repository.ts (interfaz)
+                prisma-{Nombre}.repository.ts (impl)
+Services:       {Nombre}-{layer}.service.ts
+Use Cases:      {action}-{entity}.use-case.ts
+DTOs:           {entity}-{type}.dto.ts (request/response/input/output)
+Mappers:        {entity}.mapper.ts
+Middlewares:    {entity}-{function}.middleware.ts
+Controllers:    {entities}.controller.ts
+Exceptions:     {domain}-error.exception.ts o {specific}.exception.ts

@@ -1,0 +1,42 @@
+import type { UserRole, UserStatus } from '@prisma/client';
+export declare class User {
+    readonly id: string;
+    readonly clerkUserId: string;
+    private _username;
+    private _email;
+    private _firstName;
+    private _lastName;
+    private _avatarUrl;
+    private _role;
+    private _status;
+    readonly tenantId: string | null;
+    readonly createdAt: Date;
+    readonly updatedAt: Date;
+    private constructor();
+    get username(): string | null;
+    get email(): string | null;
+    get firstName(): string | null;
+    get lastName(): string | null;
+    get avatarUrl(): string | null;
+    get role(): UserRole;
+    get status(): UserStatus;
+    get fullName(): string;
+    changeRole(role: UserRole): void;
+    deactivate(): void;
+    suspend(): void;
+    activate(): void;
+    static rehydrate(props: {
+        id: string;
+        clerkUserId: string;
+        username: string | null;
+        email: string | null;
+        firstName: string | null;
+        lastName: string | null;
+        avatarUrl: string | null;
+        role: UserRole;
+        status: UserStatus;
+        tenantId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }): User;
+}

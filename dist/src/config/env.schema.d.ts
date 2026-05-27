@@ -1,0 +1,48 @@
+import { z } from 'zod';
+export declare const envSchema: z.ZodObject<{
+    NODE_ENV: z.ZodDefault<z.ZodEnum<["development", "test", "production"]>>;
+    PORT: z.ZodDefault<z.ZodNumber>;
+    HOST: z.ZodDefault<z.ZodString>;
+    API_PREFIX: z.ZodDefault<z.ZodString>;
+    API_VERSION: z.ZodDefault<z.ZodString>;
+    CORS_ORIGINS: z.ZodEffects<z.ZodDefault<z.ZodString>, string[], string | undefined>;
+    LOG_LEVEL: z.ZodDefault<z.ZodEnum<["fatal", "error", "warn", "info", "debug", "trace"]>>;
+    DATABASE_URL: z.ZodString;
+    CLERK_PUBLISHABLE_KEY: z.ZodString;
+    CLERK_SECRET_KEY: z.ZodString;
+    CLERK_JWT_ISSUER: z.ZodOptional<z.ZodString>;
+    THROTTLE_TTL: z.ZodDefault<z.ZodNumber>;
+    THROTTLE_LIMIT: z.ZodDefault<z.ZodNumber>;
+    MULTI_TENANT_ENABLED: z.ZodEffects<z.ZodDefault<z.ZodString>, boolean, string | undefined>;
+}, "strip", z.ZodTypeAny, {
+    NODE_ENV: "development" | "test" | "production";
+    PORT: number;
+    HOST: string;
+    API_PREFIX: string;
+    API_VERSION: string;
+    CORS_ORIGINS: string[];
+    LOG_LEVEL: "fatal" | "error" | "warn" | "info" | "debug" | "trace";
+    DATABASE_URL: string;
+    CLERK_PUBLISHABLE_KEY: string;
+    CLERK_SECRET_KEY: string;
+    THROTTLE_TTL: number;
+    THROTTLE_LIMIT: number;
+    MULTI_TENANT_ENABLED: boolean;
+    CLERK_JWT_ISSUER?: string | undefined;
+}, {
+    DATABASE_URL: string;
+    CLERK_PUBLISHABLE_KEY: string;
+    CLERK_SECRET_KEY: string;
+    NODE_ENV?: "development" | "test" | "production" | undefined;
+    PORT?: number | undefined;
+    HOST?: string | undefined;
+    API_PREFIX?: string | undefined;
+    API_VERSION?: string | undefined;
+    CORS_ORIGINS?: string | undefined;
+    LOG_LEVEL?: "fatal" | "error" | "warn" | "info" | "debug" | "trace" | undefined;
+    CLERK_JWT_ISSUER?: string | undefined;
+    THROTTLE_TTL?: number | undefined;
+    THROTTLE_LIMIT?: number | undefined;
+    MULTI_TENANT_ENABLED?: string | undefined;
+}>;
+export type Env = z.infer<typeof envSchema>;

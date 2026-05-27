@@ -1,24 +1,20 @@
 import { Module } from '@nestjs/common';
-
-import { ProvidersController } from './presentation/providers.controller';
-import { PROVIDER_REPOSITORY } from './domain/provider.repository';
-import { PrismaProviderRepository } from './infrastructure/prisma-provider.repository';
-
-import { RegisterProviderUseCase } from './application/register-provider.use-case';
-import { UpdateProviderUseCase } from './application/update-provider.use-case';
-import { ToggleActiveProviderUseCase } from './application/toggle-active-provider.use-case';
-import { ListProvidersUseCase } from './application/list-providers.use-case';
-import { GetProviderUseCase } from './application/get-provider.use-case';
+import { ProvidersController } from './presentation/controllers/providers.controller';
+import { CreateProviderUseCase } from './application/use-cases/create-provider/create-provider.use-case';
+import { PrismaProviderRepository } from './infrastructure/repositories/prisma-provider.repository';
+import { PROVIDER_REPOSITORY } from './domain/repositories/provider.repository';
+import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [ProvidersController],
   providers: [
-    { provide: PROVIDER_REPOSITORY, useClass: PrismaProviderRepository },
-    RegisterProviderUseCase,
-    UpdateProviderUseCase,
-    ToggleActiveProviderUseCase,
-    ListProvidersUseCase,
-    GetProviderUseCase,
+    CreateProviderUseCase,
+    {
+      provide: PROVIDER_REPOSITORY,
+      useClass: PrismaProviderRepository,
+    },
   ],
+  exports: [CreateProviderUseCase],
 })
 export class ProvidersModule {}
