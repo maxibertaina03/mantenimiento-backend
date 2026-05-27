@@ -1,16 +1,16 @@
-import { ProviderStatus } from '../../domain/value-objects/provider-status.vo';
+import { ProviderServiceType } from '../../domain/value-objects/provider-service-type.vo';
 
 export class ProviderResponseDto {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  postalCode: string | null;
-  country: string | null;
-  taxId: string | null;
-  status: ProviderStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  id!: string;
+  name!: string;
+  taxId!: string | null;
+  contactName!: string | null;
+  phone!: string | null;
+  email!: string | null;
+  address!: string | null;
+  serviceType!: ProviderServiceType;
+  notes!: string | null;
+  active!: boolean;
+  createdAt!: Date;
+  updatedAt!: Date;
 }

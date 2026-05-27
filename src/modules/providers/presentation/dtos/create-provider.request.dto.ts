@@ -1,10 +1,23 @@
-import { IsString, IsEmail, IsOptional, MinLength, MaxLength } from 'class-validator';
+import { IsString, IsEmail, IsOptional, MinLength, MaxLength, IsEnum } from 'class-validator';
+import { ProviderServiceType } from '../../domain/value-objects/provider-service-type.vo';
 
 export class CreateProviderRequestDto {
   @IsString()
   @MinLength(3, { message: 'Provider name must be at least 3 characters long' })
   @MaxLength(255, { message: 'Provider name cannot exceed 255 characters' })
-  name: string;
+  name!: string;
+
+  @IsString()
+  @IsOptional()
+  taxId?: string | null;
+
+  @IsString()
+  @IsOptional()
+  contactName?: string | null;
+
+  @IsString()
+  @IsOptional()
+  phone?: string | null;
 
   @IsEmail({}, { message: 'Invalid email address' })
   @IsOptional()
@@ -12,25 +25,13 @@ export class CreateProviderRequestDto {
 
   @IsString()
   @IsOptional()
-  phone?: string | null;
-
-  @IsString()
-  @IsOptional()
   address?: string | null;
 
-  @IsString()
+  @IsEnum(ProviderServiceType)
   @IsOptional()
-  city?: string | null;
+  serviceType?: ProviderServiceType;
 
   @IsString()
   @IsOptional()
-  postalCode?: string | null;
-
-  @IsString()
-  @IsOptional()
-  country?: string | null;
-
-  @IsString()
-  @IsOptional()
-  taxId?: string | null;
+  notes?: string | null;
 }

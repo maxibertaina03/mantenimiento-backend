@@ -6,14 +6,14 @@ export class ProviderAppMapper {
     return {
       id: provider.getId(),
       name: provider.getName(),
-      email: provider.getEmail(),
-      phone: provider.getPhone(),
-      address: provider.getAddress(),
-      city: provider.getCity(),
-      postalCode: provider.getPostalCode(),
-      country: provider.getCountry(),
       taxId: provider.getTaxId(),
-      status: provider.getStatus(),
+      contactName: provider.getContactName(),
+      phone: provider.getPhone(),
+      email: provider.getEmail(),
+      address: provider.getAddress(),
+      serviceType: provider.getServiceType(),
+      notes: provider.getNotes(),
+      active: provider.isActive(),
       createdAt: provider.getCreatedAt(),
     };
   }

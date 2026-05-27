@@ -8,28 +8,26 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProvidersModule = void 0;
 const common_1 = require("@nestjs/common");
-const providers_controller_1 = require("./presentation/providers.controller");
-const provider_repository_1 = require("./domain/provider.repository");
-const prisma_provider_repository_1 = require("./infrastructure/prisma-provider.repository");
-const register_provider_use_case_1 = require("./application/register-provider.use-case");
-const update_provider_use_case_1 = require("./application/update-provider.use-case");
-const toggle_active_provider_use_case_1 = require("./application/toggle-active-provider.use-case");
-const list_providers_use_case_1 = require("./application/list-providers.use-case");
-const get_provider_use_case_1 = require("./application/get-provider.use-case");
+const providers_controller_1 = require("./presentation/controllers/providers.controller");
+const create_provider_use_case_1 = require("./application/use-cases/create-provider/create-provider.use-case");
+const prisma_provider_repository_1 = require("./infrastructure/repositories/prisma-provider.repository");
+const provider_repository_1 = require("./domain/repositories/provider.repository");
+const prisma_module_1 = require("../../infrastructure/prisma/prisma.module");
 let ProvidersModule = class ProvidersModule {
 };
 exports.ProvidersModule = ProvidersModule;
 exports.ProvidersModule = ProvidersModule = __decorate([
     (0, common_1.Module)({
+        imports: [prisma_module_1.PrismaModule],
         controllers: [providers_controller_1.ProvidersController],
         providers: [
-            { provide: provider_repository_1.PROVIDER_REPOSITORY, useClass: prisma_provider_repository_1.PrismaProviderRepository },
-            register_provider_use_case_1.RegisterProviderUseCase,
-            update_provider_use_case_1.UpdateProviderUseCase,
-            toggle_active_provider_use_case_1.ToggleActiveProviderUseCase,
-            list_providers_use_case_1.ListProvidersUseCase,
-            get_provider_use_case_1.GetProviderUseCase,
+            create_provider_use_case_1.CreateProviderUseCase,
+            {
+                provide: provider_repository_1.PROVIDER_REPOSITORY,
+                useClass: prisma_provider_repository_1.PrismaProviderRepository,
+            },
         ],
+        exports: [create_provider_use_case_1.CreateProviderUseCase],
     })
 ], ProvidersModule);
 //# sourceMappingURL=providers.module.js.map

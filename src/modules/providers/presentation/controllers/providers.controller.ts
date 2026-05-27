@@ -25,13 +25,13 @@ export class ProvidersController {
   async create(@Body() dto: CreateProviderRequestDto): Promise<ProviderResponseDto> {
     const output = await this.createProvider.execute({
       name: dto.name,
-      email: dto.email ?? null,
-      phone: dto.phone ?? null,
-      address: dto.address ?? null,
-      city: dto.city ?? null,
-      postalCode: dto.postalCode ?? null,
-      country: dto.country ?? null,
       taxId: dto.taxId ?? null,
+      contactName: dto.contactName ?? null,
+      phone: dto.phone ?? null,
+      email: dto.email ?? null,
+      address: dto.address ?? null,
+      serviceType: dto.serviceType,
+      notes: dto.notes ?? null,
     });
     return ProviderPresenterMapper.toResponse(output);
   }
