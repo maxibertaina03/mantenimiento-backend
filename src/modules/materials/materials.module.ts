@@ -1,28 +1,20 @@
 import { Module } from '@nestjs/common';
-
-import { MaterialsController } from './presentation/materials.controller';
-import { MATERIAL_REPOSITORY } from './domain/material.repository';
-import { PrismaMaterialRepository } from './infrastructure/prisma-material.repository';
-
-import { RegisterMaterialUseCase } from './application/register-material.use-case';
-import { UpdateMaterialUseCase } from './application/update-material.use-case';
-import { RegisterMovementUseCase } from './application/register-movement.use-case';
-import { ListMaterialsUseCase } from './application/list-materials.use-case';
-import { GetMaterialUseCase } from './application/get-material.use-case';
-import { ListMovementsUseCase } from './application/list-movements.use-case';
-import { DeleteMaterialUseCase } from './application/delete-material.use-case';
+import { MaterialsController } from './presentation/controllers/materials.controller';
+import { CreateMaterialUseCase } from './application/use-cases/create-material/create-material.use-case';
+import { PrismaMaterialRepository } from './infrastructure/repositories/prisma-material.repository';
+import { MATERIAL_REPOSITORY } from './domain/repositories/material.repository';
+import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [MaterialsController],
   providers: [
-    { provide: MATERIAL_REPOSITORY, useClass: PrismaMaterialRepository },
-    RegisterMaterialUseCase,
-    UpdateMaterialUseCase,
-    RegisterMovementUseCase,
-    ListMaterialsUseCase,
-    GetMaterialUseCase,
-    ListMovementsUseCase,
-    DeleteMaterialUseCase,
+    CreateMaterialUseCase,
+    {
+      provide: MATERIAL_REPOSITORY,
+      useClass: PrismaMaterialRepository,
+    },
   ],
+  exports: [CreateMaterialUseCase],
 })
 export class MaterialsModule {}

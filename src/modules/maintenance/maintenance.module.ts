@@ -1,31 +1,20 @@
 import { Module } from '@nestjs/common';
-
-import { MachinesModule } from '@/modules/machines/machines.module';
-
-import { MaintenanceController } from './presentation/maintenance.controller';
-import { MAINTENANCE_REPOSITORY } from './domain/maintenance.repository';
-import { PrismaMaintenanceRepository } from './infrastructure/prisma-maintenance.repository';
-
-import { ScheduleMaintenanceUseCase } from './application/schedule-maintenance.use-case';
-import { StartMaintenanceUseCase } from './application/start-maintenance.use-case';
-import { CompleteMaintenanceUseCase } from './application/complete-maintenance.use-case';
-import { CancelMaintenanceUseCase } from './application/cancel-maintenance.use-case';
-import { UpdateMaintenanceUseCase } from './application/update-maintenance.use-case';
-import { ListMaintenanceUseCase } from './application/list-maintenance.use-case';
-import { GetMaintenanceUseCase } from './application/get-maintenance.use-case';
+import { MaintenanceController } from './presentation/controllers/maintenance.controller';
+import { CreateMaintenanceOrderUseCase } from './application/use-cases/create-maintenance-order/create-maintenance-order.use-case';
+import { PrismaMaintenanceOrderRepository } from './infrastructure/repositories/prisma-maintenance-order.repository';
+import { MAINTENANCE_ORDER_REPOSITORY } from './domain/repositories/maintenance-order.repository';
+import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
 
 @Module({
-  imports: [MachinesModule],
+  imports: [PrismaModule],
   controllers: [MaintenanceController],
   providers: [
-    { provide: MAINTENANCE_REPOSITORY, useClass: PrismaMaintenanceRepository },
-    ScheduleMaintenanceUseCase,
-    StartMaintenanceUseCase,
-    CompleteMaintenanceUseCase,
-    CancelMaintenanceUseCase,
-    UpdateMaintenanceUseCase,
-    ListMaintenanceUseCase,
-    GetMaintenanceUseCase,
+    CreateMaintenanceOrderUseCase,
+    {
+      provide: MAINTENANCE_ORDER_REPOSITORY,
+      useClass: PrismaMaintenanceOrderRepository,
+    },
   ],
+  exports: [CreateMaintenanceOrderUseCase],
 })
 export class MaintenanceModule {}
