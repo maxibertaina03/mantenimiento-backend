@@ -33,6 +33,12 @@ export class UserResponseDto {
   @ApiProperty()
   fullName!: string;
 
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
+
   static from(u: User): UserResponseDto {
     return {
       id: u.id,
@@ -45,6 +51,8 @@ export class UserResponseDto {
       status: u.status,
       tenantId: u.tenantId,
       fullName: u.fullName,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
     };
   }
 }
