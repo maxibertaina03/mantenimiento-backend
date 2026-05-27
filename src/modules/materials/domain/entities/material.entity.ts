@@ -83,4 +83,15 @@ export class Material {
   isBelowMinimum(): boolean {
     return this.stock.lessThan(this.minStock);
   }
+
+  changeName(newName: string): void {
+    this.validateName(newName);
+    this.name = newName;
+    this.updatedAt = new Date();
+  }
+
+  updateLocation(location: string | null): void {
+    this.location = location;
+    this.updatedAt = new Date();
+  }
 }
