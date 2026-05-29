@@ -1,386 +1,317 @@
-# 🚀 Guía de Setup - Mantenimiento2
+# Mantenimiento2 - Guía de instalación
 
-Instrucciones completas para clonar y ejecutar el sistema Mantenimiento2 desde cero en tu máquina.
+Esta guía documenta el proceso completo para clonar el repositorio en una PC nueva y dejar el sistema funcionando end-to-end.
 
-## 📋 Requisitos Previos
+## Requisitos previos
 
-- **Node.js** ≥ 20.0.0 ([Descargar](https://nodejs.org/))
-- **pnpm** ≥ 9.0.0 (`npm install -g pnpm`)
-- **Docker Desktop** ([Descargar](https://www.docker.com/products/docker-desktop))
-- **Git** ([Descargar](https://git-scm.com/))
-- Cuenta en **Clerk** ([https://clerk.com](https://clerk.com)) - Gratuito
+| Software | Versión mínima | Descarga |
+|----------|---------------|----------|
+| Node.js | 20.x | https://nodejs.org |
+| pnpm | 9.x | `npm install -g pnpm` |
+| Docker Desktop | última | https://www.docker.com/products/docker-desktop |
+| Git | 2.x | https://git-scm.com |
 
-## 📂 Paso 1: Clonar Repositorios
+Cuenta gratuita en [Clerk](https://clerk.com) para autenticación.
 
-```powershell
-# En tu carpeta de proyectos
-git clone https://github.com/maxibertaina03/mantenimiento-backend.git
-git clone https://github.com/maxibertaina03/mantenimiento-frontend.git
+## 1. Clonar el repositorio
 
-# Navega a la carpeta del backend
-cd mantenimiento-backend
+```bash
+git clone <URL_DEL_REPO> Mantenimiento2
+cd Mantenimiento2
 ```
 
-## 🗄️ Paso 2: Configurar Base de Datos con Docker
+Si el repo tiene submódulos (backend/frontend separados):
 
-### Opción A: Usar Docker Compose (⭐ MÁS FÁCIL)
-
-```powershell
-# Desde backend/, inicia PostgreSQL con todo configurado
-docker-compose up -d
+```bash
+git submodule update --init --recursive
 ```
 
-**¡Eso es todo!** El archivo `docker-compose.yml` maneja:
-- ✅ PostgreSQL 16 Alpine
-- ✅ Base de datos `mantenimiento`
-- ✅ Usuario/password `mantenimiento`
-- ✅ Extensión CITEXT automáticamente
-- ✅ Health checks
-- ✅ Persistencia de datos
+## 2. Configurar variables de entorno
 
-### Opción B: Docker Manual
+### 2.1. Backend (`backend/.env`)
 
-```powershell
-# Inicia PostgreSQL en Docker
-docker run -d `
-  --name mantenimiento2-postgres `
-  -e POSTGRES_USER=mantenimiento `
-  -e POSTGRES_PASSWORD=mantenimiento `
-  -e POSTGRES_DB=mantenimiento `
-  -p 5434:5432 `
+Crear `backend/.env` con el siguiente contenido:
+
+```env
+# Runtime
+NODE_ENV=development
+PORT=3000
+HOST=0.0.0.0
+API_PREFIX=api
+API_VERSION=1
+
+# CORS - Origenes permitidos del frontend
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Logging
+LOG_LEVEL=debug
+
+# Database - PostgreSQL en Docker (puerto 5433)
+DATABASE_URL=postgresql://cmms_user:cmms_password@127.0.0.1:5433/postgres?schema=public
+
+# Clerk (https://dashboard.clerk.com)
+CLERK_PUBLISHABLE_KEY=pk_test_XXXXXXXXXXXX
+CLERK_SECRET_KEY=sk_test_XXXXXXXXXXXX
+CLERK_JWT_ISSUER=https://YOUR-INSTANCE.clerk.accounts.dev
+
+# Rate limiting
+THROTTLE_TTL=60
+THROTTLE_LIMIT=100
+
+# Multi-tenant (preparado, no activo)
+MULTI_TENANT_ENABLED=false
+```
+
+### 2.2. Frontend (`frontend/.env`)
+
+Crear `frontend/.env` con:
+
+```env
+# API
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+VITE_API_PROXY_TARGET=http://localhost:3000
+
+# Clerk - misma instancia que el backend
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_XXXXXXXXXXXX
+VITE_CLERK_SIGN_IN_URL=/sign-in
+VITE_CLERK_SIGN_UP_URL=/sign-up
+VITE_CLERK_AFTER_SIGN_IN_URL=/dashboard
+VITE_CLERK_AFTER_SIGN_UP_URL=/dashboard
+
+# App
+VITE_APP_NAME=Mantenimiento2
+VITE_APP_ENV=development
+```
+
+### 2.3. Configurar Clerk
+
+1. Ir a https://dashboard.clerk.com y crear una nueva aplicación.
+2. **User & Authentication > Email, Phone, Username**: deshabilitar email y phone, **habilitar solo username**.
+3. **User & Authentication > Restrictions**: deshabilitar sign-up público (sistema interno).
+4. Copiar las keys desde el dashboard:
+   - `Publishable key` → `VITE_CLERK_PUBLISHABLE_KEY` y `CLERK_PUBLISHABLE_KEY`
+   - `Secret key` → `CLERK_SECRET_KEY`
+   - JWT issuer → `CLERK_JWT_ISSUER` (formato: `https://your-app.clerk.accounts.dev`)
+
+## 3. Levantar la base de datos
+
+### Opción A: Docker Compose (recomendado)
+
+```bash
+docker run -d \
+  --name cmms_postgres \
+  -e POSTGRES_USER=cmms_user \
+  -e POSTGRES_PASSWORD=cmms_password \
+  -e POSTGRES_DB=postgres \
+  -p 5433:5432 \
   postgres:16-alpine
 ```
 
-**Espera 5 segundos para que PostgreSQL inicie**, luego:
+### Opción B: PostgreSQL local
 
-```powershell
-# Habilita la extensión CITEXT necesaria
-docker exec mantenimiento2-postgres psql -U mantenimiento -d mantenimiento -c "CREATE EXTENSION IF NOT EXISTS citext"
+Si tenés Postgres instalado, crear la BD y usuario:
+
+```sql
+CREATE USER cmms_user WITH PASSWORD 'cmms_password';
+CREATE DATABASE postgres OWNER cmms_user;
 ```
 
-### Opción C: PostgreSQL Local (Windows)
+Y actualizar `DATABASE_URL` en `backend/.env` con el puerto correcto (5432 default).
 
-Si tienes PostgreSQL instalado localmente:
-1. Crea una base de datos llamada `mantenimiento`
-2. Crea un usuario `mantenimiento` con password `mantenimiento`
-3. Ejecuta: `CREATE EXTENSION IF NOT EXISTS citext;`
+### Habilitar extension citext
 
-## 🔧 Paso 3: Configurar Variables de Entorno
-
-### Backend
-
-En `backend/`, copia `.env.example` → `.env`:
+El schema usa el tipo `CITEXT` (case-insensitive text). Hay que habilitarlo:
 
 ```bash
-cp .env.example .env
+docker exec cmms_postgres psql -U cmms_user -d postgres -c "CREATE EXTENSION IF NOT EXISTS citext;"
 ```
 
-Edita `backend/.env` y **reemplaza** las variables de Clerk:
-
-```env
-# Obtén estos valores de https://dashboard.clerk.com
-CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
-CLERK_JWT_ISSUER=https://tu-tenant.clerk.accounts.dev
-
-# Si usas Docker en puerto 5434, cambia:
-DATABASE_URL=postgresql://mantenimiento:mantenimiento@127.0.0.1:5434/mantenimiento?schema=public
-
-# Si usas PostgreSQL local en puerto 5432:
-# DATABASE_URL=postgresql://mantenimiento:mantenimiento@localhost:5432/mantenimiento?schema=public
-```
-
-### Frontend
-
-En `frontend/`, crea `.env`:
+## 4. Instalar dependencias
 
 ```bash
-cd ../mantenimiento-frontend
-```
+# Backend
+cd backend
+pnpm install
 
-Copia `.env.example` → `.env`:
-
-```bash
-cp .env.example .env
-```
-
-Edita `frontend/.env`:
-
-```env
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx  # El MISMO que en backend
-VITE_API_BASE_URL=http://localhost:3000/api/v1
-```
-
-## 📦 Paso 4: Instalar Dependencias
-
-### Backend
-
-```powershell
-cd ../mantenimiento-backend
+# Frontend (otra terminal o despues)
+cd ../frontend
 pnpm install
 ```
 
-### Frontend
+## 5. Aplicar migraciones y seed
 
-```powershell
-cd ../mantenimiento-frontend
-pnpm install
+```bash
+cd backend
+
+# Aplicar migraciones de Prisma
+pnpm prisma migrate deploy
+
+# Generar el cliente Prisma
+pnpm prisma generate
+
+# Poblar la BD con datos de prueba
+pnpm prisma db seed
 ```
 
-## 🗃️ Paso 5: Base de Datos - Migrations y Seed
-
-Desde `backend/`:
-
-```powershell
-# Ejecutar migraciones
-pnpm prisma:migrate
-
-# Ejecutar seed (carga datos de prueba)
-pnpm prisma:seed
-```
-
-**Espera a que ambos comandos terminen.** El seed crea:
-- 1 usuario admin
-- 4 máquinas
-- 5 herramientas
-- 5 materiales
+El seed crea:
+- 1 usuario admin (username: `admin`, role: `ADMIN`)
+- 4 máquinas (Torno, Fresadora, Taladro, Rectificadora)
+- 5 herramientas (Llaves, Taladros, etc.)
+- 5 materiales (Aceite, Rodamientos, etc.)
 - 4 proveedores
 - 4 órdenes de mantenimiento
 
-## 🔐 Paso 6: Configurar Admin en Clerk
+## 6. Crear usuario en Clerk para el login
 
-1. Ve a [https://dashboard.clerk.com](https://dashboard.clerk.com)
-2. En **Users**, crea un usuario:
-   - **Username:** `admin`
-   - **Password:** Tu contraseña segura (ej: `Lac122Tres`)
-3. Copia su **User ID** (empieza con `user_`)
+1. Ir a https://dashboard.clerk.com > Users > Create user
+2. Crear un usuario con `username: admin` (debe coincidir con el del seed para que se reconcilien)
+3. Establecer una password
 
-## 🗄️ Paso 7: Sincronizar Admin con Base de Datos
+Al hacer login con ese usuario, el backend reconcilia automáticamente el `clerk_user_id` con el row del admin de seed.
 
-1. Desde `backend/`, abre Prisma Studio:
+Si el usuario se crea con un username distinto, se creará un nuevo row con rol `OPERATOR`. Para promoverlo:
 
-```powershell
-pnpm prisma:studio
+```bash
+docker exec cmms_postgres psql -U cmms_user -d postgres \
+  -c "UPDATE users SET role = 'ADMIN' WHERE username = 'TU_USERNAME';"
 ```
 
-2. Se abre en `http://localhost:5555`
-3. Ve a la tabla `users`
-4. Busca el usuario `admin`
-5. En el campo `clerk_user_id`, pega el User ID que copiaste de Clerk
-6. Clickea "Save"
+## 7. Levantar el sistema
 
-## ▶️ Paso 8: Iniciar Aplicación
+En **dos terminales separadas**:
 
-### Terminal 1: Backend
-
-```powershell
-cd mantenimiento-backend
+```bash
+# Terminal 1 - Backend
+cd backend
 pnpm dev
 ```
 
-Espera a ver `Nest application successfully started` y que mapee todas las rutas.
-
-### Terminal 2: Frontend
-
-```powershell
-cd mantenimiento-frontend
+```bash
+# Terminal 2 - Frontend
+cd frontend
 pnpm dev
 ```
 
-Espera a ver:
-```
-✜  Local:   http://localhost:5173/
-```
+## 8. Verificar que todo funcione
 
-## 🎯 Paso 9: Usar la Aplicación
+| URL | Qué verificar |
+|-----|---------------|
+| http://localhost:3000/api/v1/docs | Swagger UI con todos los endpoints |
+| http://localhost:3000/health | Health check del backend |
+| http://localhost:5173 | Frontend - redirige a /sign-in |
 
-1. Abre **http://localhost:5173**
-2. Clickea "Iniciar Sesión"
-3. Ingresa:
-   - **Usuario:** `admin`
-   - **Contraseña:** La que creaste en Clerk
-4. ✅ **¡Listo!** Deberías ver el dashboard con datos de prueba
+### Flujo de login
 
-## 🛠️ Comandos Útiles
+1. Abrir http://localhost:5173
+2. Te redirige a `/sign-in`
+3. Loguearte con el username y password creados en Clerk
+4. Te redirige al `/dashboard` con los KPIs del sistema
+5. Navegar entre Máquinas, Materiales, Herramientas, Proveedores, Mantenimientos
 
-### Backend
+## Troubleshooting
 
-```powershell
-# Desarrollo con auto-reload
-pnpm dev
+### "Can't reach database server at 127.0.0.1:5434"
+El puerto correcto es **5433**, no 5434. Verificar `DATABASE_URL` en `backend/.env`.
 
-# Compilar para producción
-pnpm build
-
-# Ejecutar en producción
-pnpm start:prod
-
-# Abrir Prisma Studio (GUI para BD)
-pnpm prisma:studio
-
-# Ver migraciones
-pnpm prisma migrate status
-
-# Crear nueva migración
-pnpm prisma migrate dev --name nombre_migracion
-
-# Limpiar BD y re-seedear
-# ⚠️ CUIDADO: Borra todos los datos
-pnpm prisma migrate reset
+### "type citext does not exist"
+Falta habilitar la extension:
+```bash
+docker exec cmms_postgres psql -U cmms_user -d postgres -c "CREATE EXTENSION IF NOT EXISTS citext;"
 ```
 
-### Frontend
+### "Authentication failed against database server"
+Credenciales incorrectas. Verificar que `DATABASE_URL` use `cmms_user:cmms_password` (o las que hayas configurado en el contenedor).
 
-```powershell
-# Desarrollo
-pnpm dev
+### Frontend muestra "Cargando autenticación" indefinidamente
+La key de Clerk está mal configurada. Verificar:
+- `VITE_CLERK_PUBLISHABLE_KEY` en `frontend/.env`
+- Que la key sea `pk_test_...` (development) o `pk_live_...` (production)
 
-# Build para producción
-pnpm build
+### Las páginas no muestran datos pero el dashboard sí
+Verificar que el backend esté corriendo y que el token de Clerk se envíe correctamente. Abrir DevTools > Network y buscar requests a `/api/v1/...` - deberían tener `Authorization: Bearer ...` en los headers.
 
-# Preview de build
-pnpm preview
+### Los `Decimal` aparecen como `{s, e, d}` en el frontend
+El `TransformResponseInterceptor` debería convertir automáticamente. Si no funciona, verificar que el backend levantó después del último commit.
 
-# Lint y format
-pnpm lint
-pnpm format
-```
-
-### Docker
-
-```powershell
-# Ver logs del postgres
-docker logs mantenimiento2-postgres
-
-# Entrar a la terminal de postgres
-docker exec -it mantenimiento2-postgres psql -U mantenimiento -d mantenimiento
-
-# Detener postgres
-docker stop mantenimiento2-postgres
-
-# Reiniciar postgres
-docker start mantenimiento2-postgres
-
-# Eliminar postgres (⚠️ borra datos)
-docker rm mantenimiento2-postgres
-```
-
-## 🔄 Flujo de Clerk: Username + Password Únicamente
-
-Este sistema usa **Clerk configurado SOLO con username + password**. No tiene email, teléfono ni OAuth.
-
-**Configuración en Clerk Dashboard:**
-1. User & Authentication → Email, Phone, Username
-   - Email address: **OFF**
-   - Phone number: **OFF**
-   - Username: **ON** (required)
-   - Password: **ON** (required)
-
-2. Social Connections: **TODO OFF**
-
-3. Restrictions:
-   - Sign-up mode: **Restricted** (solo invite o admin creation)
-
-## 📊 Datos de Prueba
-
-El seed automático crea:
-
-| Entidad | Cantidad | Detalles |
-|---------|----------|----------|
-| **Máquinas** | 4 | Torno, Fresadora, Taladro, Rectificadora |
-| **Herramientas** | 5 | Llaves, Taladro portátil, Destornilladores, etc. |
-| **Materiales** | 5 | Aceite hidráulico, Rodamientos, Correas, Grasa, Filtros |
-| **Proveedores** | 4 | Hidraulix, MecánicaPlus, Electrónica Industrial, Repuestos |
-| **Mantenimientos** | 4 | Completados, Programados, En progreso |
-
-## ⚠️ Troubleshooting
-
-### "Port 5434 already in use"
-
-```powershell
-# Detén el contenedor anterior
-docker stop mantenimiento2-postgres
-
-# O usa otro puerto:
-docker run -d --name postgres-alt -e POSTGRES_USER=mantenimiento -e POSTGRES_PASSWORD=mantenimiento -e POSTGRES_DB=mantenimiento -p 5435:5432 postgres:16-alpine
-
-# Actualiza DATABASE_URL en .env a puerto 5435
-```
-
-### "Cannot GET /api/machines" (404)
-
-Los endpoints requieren autenticación. Primero loguéate en http://localhost:5173
-
-### "VITE_CLERK_PUBLISHABLE_KEY: Required"
-
-Asegúrate de que `frontend/.env` tiene la variable. Recarga la página con F5.
-
-### Backend no inicia - TypeScript errors
-
-```powershell
-# Limpia y reinstala
-rm -r node_modules .next dist
-pnpm install
-pnpm dev
-```
-
-### BD sin datos después del seed
-
-```powershell
-# Re-ejecuta el seed
-pnpm prisma:seed
-
-# O resetea todo (⚠️ borra datos)
-pnpm prisma migrate reset
-```
-
-## 📚 Estructura del Proyecto
+## Estructura del proyecto
 
 ```
-mantenimiento-backend/
-├── src/
-│   ├── modules/              # 7 bounded contexts (Machines, Tools, etc)
-│   ├── infrastructure/       # Prisma, Clerk, Logger, Audit
-│   ├── common/              # Guards, Interceptors, Decorators
-│   └── config/              # Configuración centralizada
-├── prisma/
-│   ├── schema.prisma        # Modelo de datos
-│   ├── migrations/          # Historial de cambios
-│   └── seed.ts              # Datos iniciales
-
-mantenimiento-frontend/
-├── src/
-│   ├── features/            # 7 módulos (Tools, Materials, etc)
-│   ├── entities/            # Tipos y componentes de entidades
-│   ├── pages/               # Páginas por ruta
-│   ├── shared/              # API clients, UI, hooks comunes
-│   └── app/                 # Router, layouts principales
+Mantenimiento2/
+├── backend/                    # API NestJS
+│   ├── prisma/                 # Schema y migraciones
+│   ├── src/
+│   │   ├── common/             # Decorators, guards, interceptors
+│   │   ├── config/             # Configuración del app
+│   │   ├── infrastructure/     # Clerk, Prisma, Logger
+│   │   └── modules/            # Bounded contexts (DDD)
+│   │       ├── iam/
+│   │       ├── machines/
+│   │       ├── materials/
+│   │       ├── tools/
+│   │       ├── providers/
+│   │       ├── maintenance/
+│   │       ├── audit/
+│   │       └── dashboard/
+│   └── .env
+├── frontend/                   # React + Vite SPA
+│   ├── src/
+│   │   ├── app/                # Providers, router
+│   │   ├── pages/              # Páginas (route components)
+│   │   ├── features/           # Feature modules (hooks + UI)
+│   │   ├── widgets/            # Componentes compuestos (sidebar, header)
+│   │   ├── shared/             # API, types, UI base, utils
+│   │   └── entities/           # Entidades de dominio (badges, etc)
+│   └── .env
+├── docker-compose.yml
+└── SETUP.md                    # Esta guía
 ```
 
-## 🔗 Links Útiles
+## Arquitectura backend
 
-- **Clerk Dashboard:** https://dashboard.clerk.com
-- **Prisma Studio:** http://localhost:5555 (cuando está corriendo)
-- **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:3000/api/v1
-- **GitHub Backend:** https://github.com/maxibertaina03/mantenimiento-backend
-- **GitHub Frontend:** https://github.com/maxibertaina03/mantenimiento-frontend
+Cada módulo bounded context sigue el patrón **DDD + Clean Architecture** en 5 capas:
 
-## 📝 Notas
+```
+modules/<context>/
+├── domain/
+│   ├── entities/               # Entidades de dominio puras
+│   ├── value-objects/          # VOs (enums, validaciones)
+│   ├── repositories/           # Interfaces de repositorio
+│   └── exceptions/             # Excepciones de dominio
+├── application/
+│   ├── dtos/                   # Inputs y outputs de use cases
+│   ├── mappers/                # Entity → DTO
+│   └── use-cases/              # Casos de uso (lógica de negocio)
+├── infrastructure/
+│   ├── mappers/                # Prisma model → Entity
+│   └── repositories/           # Implementaciones Prisma
+├── presentation/
+│   ├── dtos/                   # DTOs HTTP (request/response)
+│   ├── mappers/                # App output → HTTP response
+│   └── controllers/            # Controllers NestJS
+└── <context>.module.ts         # Wiring DI
+```
 
-- **Tenant:** Multi-tenant preparado pero NO activo (todos los datos en tenant `null`)
-- **Auditoría:** Toda acción se registra automáticamente
-- **Versionado API:** v1 (configurable en `.env`)
-- **TypeScript:** Strict mode activado
+## Endpoints principales
 
-## 🎓 Siguientes Pasos
+Todos requieren `Authorization: Bearer <clerk_jwt>` excepto `/health`.
 
-1. ✅ Loguéate y prueba todas las pantallas
-2. ✅ Crea nuevas máquinas/herramientas/materiales
-3. ✅ Programa mantenimientos
-4. ✅ Realiza movimientos de stock
-5. ✅ Chequea el módulo de Auditoría para ver logs
+| Endpoint | Descripción |
+|----------|-------------|
+| `GET /api/v1/iam/users/me` | Usuario actual |
+| `GET /api/v1/dashboard/stats` | KPIs agregados |
+| `GET /api/v1/machines` | Listado de máquinas |
+| `GET /api/v1/maintenance-orders` | Órdenes de mantenimiento |
+| `GET /api/v1/tools` | Herramientas |
+| `GET /api/v1/materials` | Materiales |
+| `GET /api/v1/providers` | Proveedores |
+| `GET /api/v1/audit-logs` | Logs de auditoría |
 
----
+Ver Swagger en http://localhost:3000/api/v1/docs para la lista completa.
 
-**¿Necesitas ayuda?** Chequea los logs en las terminales del backend y frontend para errores específicos.
+## Recursos
+
+- [Documentación NestJS](https://docs.nestjs.com)
+- [Documentación Prisma](https://www.prisma.io/docs)
+- [Documentación Clerk](https://clerk.com/docs)
+- [TanStack Router](https://tanstack.com/router)
+- [shadcn/ui](https://ui.shadcn.com)
