@@ -6,6 +6,7 @@ import { GetMaintenanceOrderUseCase } from './application/use-cases/get-maintena
 import { StartMaintenanceOrderUseCase } from './application/use-cases/start-maintenance-order/start-maintenance-order.use-case';
 import { CompleteMaintenanceOrderUseCase } from './application/use-cases/complete-maintenance-order/complete-maintenance-order.use-case';
 import { DeleteMaintenanceOrderUseCase } from './application/use-cases/delete-maintenance-order/delete-maintenance-order.use-case';
+import { CancelMaintenanceOrderUseCase } from './application/use-cases/cancel-maintenance-order/cancel-maintenance-order.use-case';
 import { PrismaMaintenanceOrderRepository } from './infrastructure/repositories/prisma-maintenance-order.repository';
 import { MAINTENANCE_ORDER_REPOSITORY } from './domain/repositories/maintenance-order.repository';
 import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
@@ -20,6 +21,7 @@ import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
     StartMaintenanceOrderUseCase,
     CompleteMaintenanceOrderUseCase,
     DeleteMaintenanceOrderUseCase,
+    CancelMaintenanceOrderUseCase,
     {
       provide: MAINTENANCE_ORDER_REPOSITORY,
       useClass: PrismaMaintenanceOrderRepository,
@@ -32,6 +34,7 @@ import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
     StartMaintenanceOrderUseCase,
     CompleteMaintenanceOrderUseCase,
     DeleteMaintenanceOrderUseCase,
+    CancelMaintenanceOrderUseCase,
   ],
 })
 export class MaintenanceModule {}

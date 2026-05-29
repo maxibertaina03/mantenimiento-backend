@@ -7,6 +7,7 @@ import { GetMaintenanceOrderUseCase } from '../../application/use-cases/get-main
 import { StartMaintenanceOrderUseCase } from '../../application/use-cases/start-maintenance-order/start-maintenance-order.use-case';
 import { CompleteMaintenanceOrderUseCase } from '../../application/use-cases/complete-maintenance-order/complete-maintenance-order.use-case';
 import { DeleteMaintenanceOrderUseCase } from '../../application/use-cases/delete-maintenance-order/delete-maintenance-order.use-case';
+import { CancelMaintenanceOrderUseCase } from '../../application/use-cases/cancel-maintenance-order/cancel-maintenance-order.use-case';
 import { CreateMaintenanceOrderRequestDto } from '../dtos/create-maintenance-order.request.dto';
 import { MaintenanceOrderResponseDto } from '../dtos/maintenance-order.response.dto';
 import { MaintenanceStatus } from '../../domain/value-objects/maintenance-status.vo';
@@ -26,6 +27,7 @@ export class MaintenanceController {
     private readonly startOrder: StartMaintenanceOrderUseCase,
     private readonly completeOrder: CompleteMaintenanceOrderUseCase,
     private readonly deleteOrder: DeleteMaintenanceOrderUseCase,
+    private readonly cancelOrder: CancelMaintenanceOrderUseCase,
   ) {}
 
   @Post()
@@ -160,6 +162,29 @@ export class MaintenanceController {
   @ApiResponse({ status: 404, description: 'Orden no encontrada' })
   async complete(@Param('id') id: string): Promise<MaintenanceOrderResponseDto> {
     const output = await this.completeOrder.execute(id);
+    return {
+      id: output.id,
+      machineId: output.machineId,
+      type: output.type,
+      status: output.status,
+      location: output.location,
+      cost: output.cost,
+      createdAt: output.createdAt,
+      updatedAt: new Date(),
+    };
+  }
+
+  @Patch(':id/cancel')
+  @ApiOperation({ summary: 'Cancelar mantenimiento', description: 'Marca una orden de mantenimiento como cancelada' })
+  @ApiParam({ name: 'id', description: 'ID de la orden de mantenimiento', type: String })
+  @ApiResponse({ status: 200, description: 'Mantenimiento cancelado', type: MaintenanceOrderResponseDto })
+  @ApiResponse({ status: 404, description: 'Orden no encontrada' })
+  @ApiResponse({ status: 400, description: 'Orden ya completada o cancelada' })
+  async cancel(
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ): Promise<MaintenanceOrderResponseDto> {
+    const output = await this.cancelOrder.execute({ id, reason: body?.reason });
     return {
       id: output.id,
       machineId: output.machineId,
