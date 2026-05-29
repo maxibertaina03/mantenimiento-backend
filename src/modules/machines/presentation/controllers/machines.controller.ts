@@ -19,6 +19,7 @@ import { ListMachinesUseCase } from '../../application/use-cases/list-machines/l
 import { GetMachineUseCase } from '../../application/use-cases/get-machine/get-machine.use-case';
 import { UpdateMachineUseCase } from '../../application/use-cases/update-machine/update-machine.use-case';
 import { DeleteMachineUseCase } from '../../application/use-cases/delete-machine/delete-machine.use-case';
+import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
 import { CreateMachineRequestDto } from '../dtos/create-machine.request.dto';
 import { UpdateMachineRequestDto } from '../dtos/update-machine.request.dto';
 import { MachineResponseDto } from '../dtos/machine.response.dto';
@@ -71,14 +72,17 @@ export class MachinesController {
     @GetTenantId() tenantId: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('status') _status?: string,
-    @Query('responsibleId') _responsibleId?: string,
-    @Query('search') _search?: string,
+    @Query('status') status?: string,
+    @Query('responsibleId') responsibleId?: string,
+    @Query('search') search?: string,
   ) {
     const output = await this.listMachines.execute({
       tenantId,
       page: page ? Number(page) : undefined,
       pageSize: pageSize ? Number(pageSize) : undefined,
+      search: search?.trim() || undefined,
+      status: (status as MachineStatus) || undefined,
+      responsibleId: responsibleId || undefined,
     });
     return {
       items: output.items.map((item) => MachinePresenterMapper.toResponse(item)),

@@ -5,6 +5,11 @@ export class ListMaintenanceOrdersInput {
   tenantId?: string | null;
   page?: number;
   pageSize?: number;
+  machineId?: string;
   status?: MaintenanceStatus;
   type?: MaintenanceType;
+  technicianId?: string;
+  providerId?: string;
+  scheduledFrom?: Date;
+  scheduledTo?: Date;
 }

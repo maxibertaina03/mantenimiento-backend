@@ -19,7 +19,12 @@ export class ListMachinesUseCase {
   ) {}
 
   async execute(input: ListMachinesInput): Promise<ListMachinesOutput> {
-    const machines = await this.repository.findAll(input.tenantId);
+    const machines = await this.repository.findAll({
+      tenantId: input.tenantId,
+      search: input.search,
+      status: input.status,
+      responsibleId: input.responsibleId,
+    });
 
     const page = Number(input.page) > 0 ? Number(input.page) : 1;
     const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;

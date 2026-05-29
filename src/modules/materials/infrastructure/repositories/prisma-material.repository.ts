@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { Material } from '../../domain/entities/material.entity';
-import { IMaterialRepository } from '../../domain/repositories/material.repository';
+import { IMaterialRepository, MaterialFilters } from '../../domain/repositories/material.repository';
 import { PrismaMaterialMapper } from '../mappers/prisma-material.mapper';
 
 @Injectable()
@@ -27,10 +28,25 @@ export class PrismaMaterialRepository implements IMaterialRepository {
     return raw ? PrismaMaterialMapper.toDomain(raw) : null;
   }
 
-  async findAll(tenantId?: string | null): Promise<Material[]> {
-    const materials = await this.prisma.material.findMany({
-      where: tenantId ? { tenantId } : {},
+  async findAll(filters: MaterialFilters = {}): Promise<Material[]> {
+    const where: Prisma.MaterialWhereInput = { deletedAt: null };
+    if (filters.tenantId) where.tenantId = filters.tenantId;
+    if (filters.search) {
+      const q = filters.search.trim();
+      where.OR = [
+        { code: { contains: q, mode: 'insensitive' } },
+        { name: { contains: q, mode: 'insensitive' } },
+      ];
+    }
+    let materials = await this.prisma.material.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
     });
+    if (filters.lowStockOnly) {
+      materials = materials.filter(
+        (m) => m.minStock.gt(0) && m.stock.lt(m.minStock),
+      );
+    }
     return materials.map((raw) => PrismaMaterialMapper.toDomain(raw));
   }
 

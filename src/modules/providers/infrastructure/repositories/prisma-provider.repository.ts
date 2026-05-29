@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma, ProviderServiceType as PrismaProviderServiceType } from '@prisma/client';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { Provider } from '../../domain/entities/provider.entity';
-import { IProviderRepository } from '../../domain/repositories/provider.repository';
+import { IProviderRepository, ProviderFilters } from '../../domain/repositories/provider.repository';
 import { PrismaProviderMapper } from '../mappers/prisma-provider.mapper';
 
 @Injectable()
@@ -31,9 +32,22 @@ export class PrismaProviderRepository implements IProviderRepository {
     return raw ? PrismaProviderMapper.toDomain(raw) : null;
   }
 
-  async findAll(tenantId?: string | null): Promise<Provider[]> {
+  async findAll(filters: ProviderFilters = {}): Promise<Provider[]> {
+    const where: Prisma.ProviderWhereInput = { deletedAt: null };
+    if (filters.tenantId) where.tenantId = filters.tenantId;
+    if (filters.serviceType) where.serviceType = filters.serviceType as PrismaProviderServiceType;
+    if (filters.active !== undefined) where.active = filters.active;
+    if (filters.search) {
+      const q = filters.search.trim();
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { contactName: { contains: q, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+      ];
+    }
     const providers = await this.prisma.provider.findMany({
-      where: tenantId ? { tenantId } : {},
+      where,
+      orderBy: { name: 'asc' },
     });
     return providers.map((raw) => PrismaProviderMapper.toDomain(raw));
   }

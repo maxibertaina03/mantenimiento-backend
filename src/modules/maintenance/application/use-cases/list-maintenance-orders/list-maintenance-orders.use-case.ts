@@ -19,7 +19,16 @@ export class ListMaintenanceOrdersUseCase {
   ) {}
 
   async execute(input: ListMaintenanceOrdersInput): Promise<ListMaintenanceOrdersOutput> {
-    const orders = await this.repository.findAll(input.tenantId);
+    const orders = await this.repository.findAll({
+      tenantId: input.tenantId,
+      machineId: input.machineId,
+      status: input.status,
+      type: input.type,
+      technicianId: input.technicianId,
+      providerId: input.providerId,
+      scheduledFrom: input.scheduledFrom,
+      scheduledTo: input.scheduledTo,
+    });
 
     const page = Number(input.page) > 0 ? Number(input.page) : 1;
     const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;

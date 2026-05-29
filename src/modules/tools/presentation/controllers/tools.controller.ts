@@ -5,6 +5,7 @@ import { ListToolsUseCase } from '../../application/use-cases/list-tools/list-to
 import { GetToolUseCase } from '../../application/use-cases/get-tool/get-tool.use-case';
 import { UpdateToolUseCase } from '../../application/use-cases/update-tool/update-tool.use-case';
 import { DeleteToolUseCase } from '../../application/use-cases/delete-tool/delete-tool.use-case';
+import { ToolStatus } from '../../domain/value-objects/tool-status.vo';
 import { CreateToolRequestDto } from '../dtos/create-tool.request.dto';
 import { UpdateToolRequestDto } from '../dtos/update-tool.request.dto';
 import { ToolResponseDto } from '../dtos/tool.response.dto';
@@ -56,13 +57,15 @@ export class ToolsController {
     @GetTenantId() tenantId: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('status') _status?: string,
-    @Query('search') _search?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
   ) {
     const output = await this.listTools.execute({
       tenantId,
       page: page ? Number(page) : undefined,
       pageSize: pageSize ? Number(pageSize) : undefined,
+      search: search?.trim() || undefined,
+      status: (status as ToolStatus) || undefined,
     });
     return {
       items: output.items.map((item) => ToolPresenterMapper.toResponse(item)),

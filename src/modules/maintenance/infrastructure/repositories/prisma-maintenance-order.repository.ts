@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma, MaintenanceStatus as PrismaMaintenanceStatus, MaintenanceType as PrismaMaintenanceType } from '@prisma/client';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { MaintenanceOrder } from '../../domain/entities/maintenance-order.entity';
-import { IMaintenanceOrderRepository } from '../../domain/repositories/maintenance-order.repository';
+import { IMaintenanceOrderRepository, MaintenanceOrderFilters } from '../../domain/repositories/maintenance-order.repository';
 import { PrismaMaintenanceOrderMapper } from '../mappers/prisma-maintenance-order.mapper';
 
 @Injectable()
@@ -27,9 +28,22 @@ export class PrismaMaintenanceOrderRepository implements IMaintenanceOrderReposi
     return orders.map((raw) => PrismaMaintenanceOrderMapper.toDomain(raw));
   }
 
-  async findAll(tenantId?: string | null): Promise<MaintenanceOrder[]> {
+  async findAll(filters: MaintenanceOrderFilters = {}): Promise<MaintenanceOrder[]> {
+    const where: Prisma.MaintenanceOrderWhereInput = { deletedAt: null };
+    if (filters.tenantId) where.tenantId = filters.tenantId;
+    if (filters.machineId) where.machineId = filters.machineId;
+    if (filters.status) where.status = filters.status as PrismaMaintenanceStatus;
+    if (filters.type) where.type = filters.type as PrismaMaintenanceType;
+    if (filters.technicianId) where.technicianId = filters.technicianId;
+    if (filters.providerId) where.providerId = filters.providerId;
+    if (filters.scheduledFrom || filters.scheduledTo) {
+      where.scheduledFor = {};
+      if (filters.scheduledFrom) where.scheduledFor.gte = filters.scheduledFrom;
+      if (filters.scheduledTo) where.scheduledFor.lte = filters.scheduledTo;
+    }
     const orders = await this.prisma.maintenanceOrder.findMany({
-      where: tenantId ? { tenantId } : {},
+      where,
+      orderBy: [{ scheduledFor: 'desc' }, { createdAt: 'desc' }],
     });
     return orders.map((raw) => PrismaMaintenanceOrderMapper.toDomain(raw));
   }

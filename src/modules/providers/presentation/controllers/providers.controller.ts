@@ -18,6 +18,7 @@ import { ListProvidersUseCase } from '../../application/use-cases/list-providers
 import { GetProviderUseCase } from '../../application/use-cases/get-provider/get-provider.use-case';
 import { UpdateProviderUseCase } from '../../application/use-cases/update-provider/update-provider.use-case';
 import { DeleteProviderUseCase } from '../../application/use-cases/delete-provider/delete-provider.use-case';
+import { ProviderServiceType } from '../../domain/value-objects/provider-service-type.vo';
 import { CreateProviderRequestDto } from '../dtos/create-provider.request.dto';
 import { UpdateProviderRequestDto } from '../dtos/update-provider.request.dto';
 import { ProviderResponseDto } from '../dtos/provider.response.dto';
@@ -68,14 +69,17 @@ export class ProvidersController {
     @GetTenantId() tenantId: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('search') _search?: string,
-    @Query('serviceType') _serviceType?: string,
-    @Query('active') _active?: string,
+    @Query('search') search?: string,
+    @Query('serviceType') serviceType?: string,
+    @Query('active') active?: string,
   ) {
     const output = await this.listProviders.execute({
       tenantId,
       page: page ? Number(page) : undefined,
       pageSize: pageSize ? Number(pageSize) : undefined,
+      search: search?.trim() || undefined,
+      serviceType: (serviceType as ProviderServiceType) || undefined,
+      active: active === undefined ? undefined : active === 'true',
     });
     return {
       items: output.items.map((item) => ProviderPresenterMapper.toResponse(item)),

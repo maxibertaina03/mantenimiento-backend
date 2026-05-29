@@ -1,5 +1,7 @@
 export class ListMaterialsInput {
-  tenantId!: string;
+  tenantId?: string | null;
   page?: number;
   pageSize?: number;
+  search?: string;
+  lowStockOnly?: boolean;
 }

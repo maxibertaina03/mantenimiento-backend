@@ -19,7 +19,12 @@ export class ListProvidersUseCase {
   ) {}
 
   async execute(input: ListProvidersInput): Promise<ListProvidersOutput> {
-    const providers = await this.repository.findAll(input.tenantId);
+    const providers = await this.repository.findAll({
+      tenantId: input.tenantId,
+      search: input.search,
+      serviceType: input.serviceType,
+      active: input.active,
+    });
 
     const page = Number(input.page) > 0 ? Number(input.page) : 1;
     const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;

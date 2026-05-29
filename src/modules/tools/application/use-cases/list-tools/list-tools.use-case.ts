@@ -19,7 +19,11 @@ export class ListToolsUseCase {
   ) {}
 
   async execute(input: ListToolsInput): Promise<ListToolsOutput> {
-    const tools = await this.repository.findAll(input.tenantId);
+    const tools = await this.repository.findAll({
+      tenantId: input.tenantId,
+      search: input.search,
+      status: input.status,
+    });
 
     const page = Number(input.page) > 0 ? Number(input.page) : 1;
     const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;

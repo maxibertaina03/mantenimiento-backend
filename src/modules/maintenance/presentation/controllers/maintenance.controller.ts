@@ -9,6 +9,8 @@ import { CompleteMaintenanceOrderUseCase } from '../../application/use-cases/com
 import { DeleteMaintenanceOrderUseCase } from '../../application/use-cases/delete-maintenance-order/delete-maintenance-order.use-case';
 import { CreateMaintenanceOrderRequestDto } from '../dtos/create-maintenance-order.request.dto';
 import { MaintenanceOrderResponseDto } from '../dtos/maintenance-order.response.dto';
+import { MaintenanceStatus } from '../../domain/value-objects/maintenance-status.vo';
+import { MaintenanceType } from '../../domain/value-objects/maintenance-type.vo';
 import { ClerkAuthGuard } from '../../../../common/guards/clerk-auth.guard';
 import { GetTenantId } from '../../../../common/decorators/get-tenant-id.decorator';
 
@@ -67,18 +69,25 @@ export class MaintenanceController {
     @GetTenantId() tenantId: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('machineId') _machineId?: string,
-    @Query('status') _status?: string,
-    @Query('type') _type?: string,
-    @Query('technicianId') _technicianId?: string,
-    @Query('providerId') _providerId?: string,
-    @Query('scheduledFrom') _scheduledFrom?: string,
-    @Query('scheduledTo') _scheduledTo?: string,
+    @Query('machineId') machineId?: string,
+    @Query('status') status?: string,
+    @Query('type') type?: string,
+    @Query('technicianId') technicianId?: string,
+    @Query('providerId') providerId?: string,
+    @Query('scheduledFrom') scheduledFrom?: string,
+    @Query('scheduledTo') scheduledTo?: string,
   ) {
     const output = await this.listOrders.execute({
       tenantId,
       page: page ? Number(page) : undefined,
       pageSize: pageSize ? Number(pageSize) : undefined,
+      machineId: machineId || undefined,
+      status: (status as MaintenanceStatus) || undefined,
+      type: (type as MaintenanceType) || undefined,
+      technicianId: technicianId || undefined,
+      providerId: providerId || undefined,
+      scheduledFrom: scheduledFrom ? new Date(scheduledFrom) : undefined,
+      scheduledTo: scheduledTo ? new Date(scheduledTo) : undefined,
     });
     return {
       items: output.items.map((item) => ({

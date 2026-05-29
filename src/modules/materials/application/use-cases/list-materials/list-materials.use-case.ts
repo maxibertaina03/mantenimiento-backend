@@ -19,7 +19,11 @@ export class ListMaterialsUseCase {
   ) {}
 
   async execute(input: ListMaterialsInput): Promise<ListMaterialsOutput> {
-    const materials = await this.repository.findAll(input.tenantId);
+    const materials = await this.repository.findAll({
+      tenantId: input.tenantId,
+      search: input.search,
+      lowStockOnly: input.lowStockOnly,
+    });
 
     const page = Number(input.page) > 0 ? Number(input.page) : 1;
     const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;

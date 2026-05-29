@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma, ToolStatus as PrismaToolStatus } from '@prisma/client';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 import { Tool } from '../../domain/entities/tool.entity';
-import { IToolRepository } from '../../domain/repositories/tool.repository';
+import { IToolRepository, ToolFilters } from '../../domain/repositories/tool.repository';
 import { PrismaToolMapper } from '../mappers/prisma-tool.mapper';
 
 @Injectable()
@@ -27,9 +28,21 @@ export class PrismaToolRepository implements IToolRepository {
     return raw ? PrismaToolMapper.toDomain(raw) : null;
   }
 
-  async findAll(tenantId?: string | null): Promise<Tool[]> {
+  async findAll(filters: ToolFilters = {}): Promise<Tool[]> {
+    const where: Prisma.ToolWhereInput = { deletedAt: null };
+    if (filters.tenantId) where.tenantId = filters.tenantId;
+    if (filters.status) where.status = filters.status as PrismaToolStatus;
+    if (filters.search) {
+      const q = filters.search.trim();
+      where.OR = [
+        { code: { contains: q, mode: 'insensitive' } },
+        { name: { contains: q, mode: 'insensitive' } },
+        { serialNumber: { contains: q, mode: 'insensitive' } },
+      ];
+    }
     const tools = await this.prisma.tool.findMany({
-      where: tenantId ? { tenantId } : {},
+      where,
+      orderBy: { createdAt: 'desc' },
     });
     return tools.map((raw) => PrismaToolMapper.toDomain(raw));
   }

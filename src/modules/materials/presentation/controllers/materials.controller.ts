@@ -54,13 +54,15 @@ export class MaterialsController {
     @GetTenantId() tenantId: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
-    @Query('search') _search?: string,
-    @Query('lowStockOnly') _lowStockOnly?: string,
+    @Query('search') search?: string,
+    @Query('lowStockOnly') lowStockOnly?: string,
   ) {
     const output = await this.listMaterials.execute({
       tenantId,
       page: page ? Number(page) : undefined,
       pageSize: pageSize ? Number(pageSize) : undefined,
+      search: search?.trim() || undefined,
+      lowStockOnly: lowStockOnly === 'true',
     });
     return {
       items: output.items.map((item) => MaterialPresenterMapper.toResponse(item)),
