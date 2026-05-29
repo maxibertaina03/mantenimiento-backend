@@ -18,6 +18,8 @@ import { ListProvidersUseCase } from '../../application/use-cases/list-providers
 import { GetProviderUseCase } from '../../application/use-cases/get-provider/get-provider.use-case';
 import { UpdateProviderUseCase } from '../../application/use-cases/update-provider/update-provider.use-case';
 import { DeleteProviderUseCase } from '../../application/use-cases/delete-provider/delete-provider.use-case';
+import { SetProviderActiveUseCase } from '../../application/use-cases/set-provider-active/set-provider-active.use-case';
+import { ListProviderHistoryUseCase } from '../../application/use-cases/list-provider-history/list-provider-history.use-case';
 import { ProviderServiceType } from '../../domain/value-objects/provider-service-type.vo';
 import { CreateProviderRequestDto } from '../dtos/create-provider.request.dto';
 import { UpdateProviderRequestDto } from '../dtos/update-provider.request.dto';
@@ -38,6 +40,8 @@ export class ProvidersController {
     private readonly getProvider: GetProviderUseCase,
     private readonly updateProvider: UpdateProviderUseCase,
     private readonly deleteProvider: DeleteProviderUseCase,
+    private readonly setActive: SetProviderActiveUseCase,
+    private readonly listHistory: ListProviderHistoryUseCase,
   ) {}
 
   @Post()
@@ -103,8 +107,29 @@ export class ProvidersController {
   @ApiOperation({ summary: 'Historial del proveedor', description: 'Lista las órdenes de mantenimiento del proveedor' })
   @ApiParam({ name: 'id', description: 'ID del proveedor', type: String })
   @ApiResponse({ status: 200, description: 'Historial obtenido' })
-  async history(@Param('id') _id: string) {
-    return [];
+  async history(
+    @Param('id') id: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    return this.listHistory.execute({
+      providerId: id,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
+    });
+  }
+
+  @Patch(':id/active')
+  @ApiOperation({ summary: 'Activar/desactivar proveedor', description: 'Cambia el flag active del proveedor' })
+  @ApiParam({ name: 'id', description: 'ID del proveedor', type: String })
+  @ApiResponse({ status: 200, description: 'Proveedor actualizado', type: ProviderResponseDto })
+  @ApiResponse({ status: 404, description: 'Proveedor no encontrado' })
+  async toggleActive(
+    @Param('id') id: string,
+    @Body() body: { active: boolean },
+  ): Promise<ProviderResponseDto> {
+    const output = await this.setActive.execute({ id, active: body.active });
+    return ProviderPresenterMapper.toResponse(output);
   }
 
   @Patch(':id')

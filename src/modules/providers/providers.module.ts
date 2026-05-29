@@ -5,6 +5,8 @@ import { ListProvidersUseCase } from './application/use-cases/list-providers/lis
 import { GetProviderUseCase } from './application/use-cases/get-provider/get-provider.use-case';
 import { UpdateProviderUseCase } from './application/use-cases/update-provider/update-provider.use-case';
 import { DeleteProviderUseCase } from './application/use-cases/delete-provider/delete-provider.use-case';
+import { SetProviderActiveUseCase } from './application/use-cases/set-provider-active/set-provider-active.use-case';
+import { ListProviderHistoryUseCase } from './application/use-cases/list-provider-history/list-provider-history.use-case';
 import { PrismaProviderRepository } from './infrastructure/repositories/prisma-provider.repository';
 import { PROVIDER_REPOSITORY } from './domain/repositories/provider.repository';
 import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
@@ -18,11 +20,21 @@ import { PrismaModule } from '../../infrastructure/prisma/prisma.module';
     GetProviderUseCase,
     UpdateProviderUseCase,
     DeleteProviderUseCase,
+    SetProviderActiveUseCase,
+    ListProviderHistoryUseCase,
     {
       provide: PROVIDER_REPOSITORY,
       useClass: PrismaProviderRepository,
     },
   ],
-  exports: [CreateProviderUseCase, ListProvidersUseCase, GetProviderUseCase, UpdateProviderUseCase, DeleteProviderUseCase],
+  exports: [
+    CreateProviderUseCase,
+    ListProvidersUseCase,
+    GetProviderUseCase,
+    UpdateProviderUseCase,
+    DeleteProviderUseCase,
+    SetProviderActiveUseCase,
+    ListProviderHistoryUseCase,
+  ],
 })
 export class ProvidersModule {}
