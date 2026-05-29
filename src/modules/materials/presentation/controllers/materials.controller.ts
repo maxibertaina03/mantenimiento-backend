@@ -6,12 +6,16 @@ import { ListMaterialsUseCase } from '../../application/use-cases/list-materials
 import { GetMaterialUseCase } from '../../application/use-cases/get-material/get-material.use-case';
 import { UpdateMaterialUseCase } from '../../application/use-cases/update-material/update-material.use-case';
 import { DeleteMaterialUseCase } from '../../application/use-cases/delete-material/delete-material.use-case';
+import { RegisterMovementUseCase } from '../../application/use-cases/register-movement/register-movement.use-case';
+import { ListMovementsUseCase } from '../../application/use-cases/list-movements/list-movements.use-case';
+import type { StockMovementType } from '../../application/dtos/register-movement.input';
 import { CreateMaterialRequestDto } from '../dtos/create-material.request.dto';
 import { UpdateMaterialRequestDto } from '../dtos/update-material.request.dto';
 import { MaterialResponseDto } from '../dtos/material.response.dto';
 import { MaterialPresenterMapper } from '../mappers/material-presenter.mapper';
 import { ClerkAuthGuard } from '../../../../common/guards/clerk-auth.guard';
 import { GetTenantId } from '../../../../common/decorators/get-tenant-id.decorator';
+import { CurrentUser, type AuthenticatedUser } from '../../../../common/decorators/current-user.decorator';
 
 @ApiTags('materials')
 @ApiBearerAuth('clerk')
@@ -24,6 +28,8 @@ export class MaterialsController {
     private readonly getMaterial: GetMaterialUseCase,
     private readonly updateMaterial: UpdateMaterialUseCase,
     private readonly deleteMaterial: DeleteMaterialUseCase,
+    private readonly registerMovement: RegisterMovementUseCase,
+    private readonly listMovements: ListMovementsUseCase,
   ) {}
 
   @Post()
@@ -86,8 +92,40 @@ export class MaterialsController {
   @ApiOperation({ summary: 'Movimientos de stock del material', description: 'Lista los movimientos de stock' })
   @ApiParam({ name: 'id', description: 'ID del material', type: String })
   @ApiResponse({ status: 200, description: 'Movimientos obtenidos' })
-  async movements(@Param('id') _id: string) {
-    return [];
+  async movements(
+    @Param('id') id: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    return this.listMovements.execute({
+      materialId: id,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
+    });
+  }
+
+  @Post(':id/movements')
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Registrar movimiento de stock', description: 'Registra entrada, salida, ajuste o consumo' })
+  @ApiParam({ name: 'id', description: 'ID del material', type: String })
+  @ApiResponse({ status: 201, description: 'Movimiento registrado' })
+  @ApiResponse({ status: 400, description: 'Stock insuficiente o datos inválidos' })
+  async createMovement(
+    @Param('id') id: string,
+    @Body() body: { type: StockMovementType; quantity: string; adjustmentSign?: 1 | -1; reason?: string | null; reference?: string | null },
+    @CurrentUser() user: AuthenticatedUser,
+    @GetTenantId() tenantId: string,
+  ) {
+    return this.registerMovement.execute({
+      materialId: id,
+      type: body.type,
+      quantity: new Decimal(body.quantity),
+      adjustmentSign: body.adjustmentSign,
+      reason: body.reason ?? null,
+      reference: body.reference ?? null,
+      createdById: user.id,
+      tenantId: tenantId ?? null,
+    });
   }
 
   @Patch(':id')
