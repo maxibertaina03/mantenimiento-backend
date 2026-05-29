@@ -105,6 +105,14 @@ export class MachinesController {
     return MachinePresenterMapper.toResponse(output);
   }
 
+  @Get(':id/usage-logs')
+  @ApiOperation({ summary: 'Logs de uso de máquina', description: 'Lista los registros de horas de uso' })
+  @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })
+  @ApiResponse({ status: 200, description: 'Logs de uso obtenidos' })
+  async usageLogs(@Param('id') _id: string) {
+    return [];
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar máquina', description: 'Actualiza los datos de una máquina' })
   @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })

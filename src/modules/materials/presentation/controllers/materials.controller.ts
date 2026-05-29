@@ -80,6 +80,14 @@ export class MaterialsController {
     return MaterialPresenterMapper.toResponse(output);
   }
 
+  @Get(':id/movements')
+  @ApiOperation({ summary: 'Movimientos de stock del material', description: 'Lista los movimientos de stock' })
+  @ApiParam({ name: 'id', description: 'ID del material', type: String })
+  @ApiResponse({ status: 200, description: 'Movimientos obtenidos' })
+  async movements(@Param('id') _id: string) {
+    return [];
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar material', description: 'Actualiza los datos de un material' })
   @ApiParam({ name: 'id', description: 'ID del material', type: String })

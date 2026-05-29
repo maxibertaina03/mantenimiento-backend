@@ -95,6 +95,14 @@ export class ProvidersController {
     return ProviderPresenterMapper.toResponse(output);
   }
 
+  @Get(':id/history')
+  @ApiOperation({ summary: 'Historial del proveedor', description: 'Lista las órdenes de mantenimiento del proveedor' })
+  @ApiParam({ name: 'id', description: 'ID del proveedor', type: String })
+  @ApiResponse({ status: 200, description: 'Historial obtenido' })
+  async history(@Param('id') _id: string) {
+    return [];
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar proveedor', description: 'Actualiza los datos de un proveedor' })
   @ApiParam({ name: 'id', description: 'ID del proveedor', type: String })

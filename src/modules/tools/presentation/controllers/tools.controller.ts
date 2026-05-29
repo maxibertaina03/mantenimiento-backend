@@ -82,6 +82,14 @@ export class ToolsController {
     return ToolPresenterMapper.toResponse(output);
   }
 
+  @Get(':id/loans')
+  @ApiOperation({ summary: 'Préstamos de la herramienta', description: 'Lista los préstamos de una herramienta' })
+  @ApiParam({ name: 'id', description: 'ID de la herramienta', type: String })
+  @ApiResponse({ status: 200, description: 'Préstamos obtenidos' })
+  async loans(@Param('id') _id: string) {
+    return [];
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar herramienta', description: 'Actualiza los datos de una herramienta' })
   @ApiParam({ name: 'id', description: 'ID de la herramienta', type: String })
