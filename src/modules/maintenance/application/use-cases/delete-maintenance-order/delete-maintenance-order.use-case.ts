@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMaintenanceOrderRepository, MAINTENANCE_ORDER_REPOSITORY } from '../../domain/repositories/maintenance-order.repository';
-import { MaintenanceOrderNotFoundException } from '../../domain/exceptions/maintenance-order-not-found.exception';
+import { IMaintenanceOrderRepository, MAINTENANCE_ORDER_REPOSITORY } from '../../../domain/repositories/maintenance-order.repository';
+import { MaintenanceOrderNotFoundException } from '../../../domain/exceptions/maintenance-order-not-found.exception';
 
 @Injectable()
 export class DeleteMaintenanceOrderUseCase {

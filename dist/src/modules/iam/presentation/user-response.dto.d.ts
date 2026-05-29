@@ -11,5 +11,7 @@ export declare class UserResponseDto {
     status: UserStatus;
     tenantId: string | null;
     fullName: string;
+    createdAt: Date;
+    updatedAt: Date;
     static from(u: User): UserResponseDto;
 }

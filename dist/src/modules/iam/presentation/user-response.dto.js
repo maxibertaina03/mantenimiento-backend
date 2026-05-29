@@ -22,6 +22,8 @@ class UserResponseDto {
     status;
     tenantId;
     fullName;
+    createdAt;
+    updatedAt;
     static from(u) {
         return {
             id: u.id,
@@ -34,6 +36,8 @@ class UserResponseDto {
             status: u.status,
             tenantId: u.tenantId,
             fullName: u.fullName,
+            createdAt: u.createdAt,
+            updatedAt: u.updatedAt,
         };
     }
 }
@@ -78,4 +82,12 @@ __decorate([
     (0, swagger_1.ApiProperty)(),
     __metadata("design:type", String)
 ], UserResponseDto.prototype, "fullName", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Date)
+], UserResponseDto.prototype, "createdAt", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Date)
+], UserResponseDto.prototype, "updatedAt", void 0);
 //# sourceMappingURL=user-response.dto.js.map

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../domain/repositories/material.repository';
-import { ListMaterialsInput } from '../dtos/list-materials.input';
-import { ListMaterialsOutput, MaterialListItemDto } from '../dtos/list-materials.output';
+import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../../domain/repositories/material.repository';
+import { ListMaterialsInput } from '../../dtos/list-materials.input';
+import { ListMaterialsOutput, MaterialListItemDto } from '../../dtos/list-materials.output';
 
 @Injectable()
 export class ListMaterialsUseCase {

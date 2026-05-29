@@ -18,9 +18,11 @@ export class GetUserUseCase {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatarUrl: user.avatarUrl,
       fullName: user.fullName,
       role: user.role,
       status: user.status,
+      tenantId: user.tenantId,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

@@ -6,12 +6,20 @@ export enum MaintenanceStatus {
 }
 
 export class MaintenanceStatusVO {
-  constructor(private readonly value: MaintenanceStatus) {
+  private readonly value: MaintenanceStatus;
+
+  constructor(value: MaintenanceStatus) {
     if (!Object.values(MaintenanceStatus).includes(value)) {
       throw new Error(`Invalid maintenance status: ${value}`);
     }
+    this.value = value;
   }
-  getValue(): MaintenanceStatus { return this.value; }
-  isCompleted(): boolean { return this.value === MaintenanceStatus.COMPLETED; }
-  equals(other: MaintenanceStatusVO): boolean { return this.value === other.value; }
+
+  getValue(): MaintenanceStatus {
+    return this.value;
+  }
+
+  equals(other: MaintenanceStatusVO): boolean {
+    return this.value === other.value;
+  }
 }

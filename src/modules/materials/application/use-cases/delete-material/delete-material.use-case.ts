@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../domain/repositories/material.repository';
-import { MaterialNotFoundException } from '../../domain/exceptions/material-not-found.exception';
+import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../../domain/repositories/material.repository';
+import { MaterialNotFoundException } from '../../../domain/exceptions/material-not-found.exception';
 
 @Injectable()
 export class DeleteMaterialUseCase {

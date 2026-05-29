@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IToolRepository, TOOL_REPOSITORY } from '../../domain/repositories/tool.repository';
-import { ListToolsInput } from '../dtos/list-tools.input';
-import { ListToolsOutput, ToolListItemDto } from '../dtos/list-tools.output';
+import { IToolRepository, TOOL_REPOSITORY } from '../../../domain/repositories/tool.repository';
+import { ListToolsInput } from '../../dtos/list-tools.input';
+import { ListToolsOutput, ToolListItemDto } from '../../dtos/list-tools.output';
 
 @Injectable()
 export class ListToolsUseCase {

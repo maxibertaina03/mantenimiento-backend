@@ -25,9 +25,11 @@ export class UpdateUserUseCase {
       email: updated.email,
       firstName: updated.firstName,
       lastName: updated.lastName,
+      avatarUrl: updated.avatarUrl,
       fullName: updated.fullName,
       role: updated.role,
       status: updated.status,
+      tenantId: updated.tenantId,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
     };

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IProviderRepository, PROVIDER_REPOSITORY } from '../../domain/repositories/provider.repository';
-import { ListProvidersInput } from '../dtos/list-providers.input';
-import { ListProvidersOutput, ProviderListItemDto } from '../dtos/list-providers.output';
+import { IProviderRepository, PROVIDER_REPOSITORY } from '../../../domain/repositories/provider.repository';
+import { ListProvidersInput } from '../../dtos/list-providers.input';
+import { ListProvidersOutput, ProviderListItemDto } from '../../dtos/list-providers.output';
 
 @Injectable()
 export class ListProvidersUseCase {

@@ -1,5 +1,5 @@
-import { CreateMachineOutput } from '../../application/dtos/create-machine.output';
 import { MachineResponseDto } from '../dtos/machine.response.dto';
+import { CreateMachineOutput } from '../../application/dtos/create-machine.output';
 
 export class MachinePresenterMapper {
   static toResponse(output: CreateMachineOutput): MachineResponseDto {
@@ -7,10 +7,10 @@ export class MachinePresenterMapper {
       id: output.id,
       code: output.code,
       name: output.name,
+      status: output.status,
       brand: output.brand,
       model: output.model,
       serialNumber: output.serialNumber,
-      status: output.status,
       usageHours: output.usageHours,
       location: output.location,
       responsibleId: output.responsibleId,

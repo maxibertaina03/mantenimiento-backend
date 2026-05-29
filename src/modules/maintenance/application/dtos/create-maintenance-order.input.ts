@@ -1,6 +1,7 @@
+import { Decimal } from '@prisma/client/runtime/library';
 import { MaintenanceType } from '../../domain/value-objects/maintenance-type.vo';
 import { MaintenanceLocation } from '../../domain/value-objects/maintenance-location.vo';
-import { Decimal } from '@prisma/client/runtime/library';
+
 export class CreateMaintenanceOrderInput {
   machineId!: string;
   type!: MaintenanceType;

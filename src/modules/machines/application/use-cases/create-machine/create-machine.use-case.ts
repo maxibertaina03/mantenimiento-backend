@@ -1,13 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { v4 as generateUUID } from 'uuid';
 import { Decimal } from '@prisma/client/runtime/library';
-import { Machine } from '../../domain/entities/machine.entity';
-import { IMachineRepository, MACHINE_REPOSITORY } from '../../domain/repositories/machine.repository';
-import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
-import { InvalidMachineException } from '../../domain/exceptions/invalid-machine.exception';
-import { CreateMachineInput } from '../dtos/create-machine.input';
-import { CreateMachineOutput } from '../dtos/create-machine.output';
-import { MachineAppMapper } from '../mappers/machine-app.mapper';
+import { Machine } from '../../../domain/entities/machine.entity';
+import { IMachineRepository, MACHINE_REPOSITORY } from '../../../domain/repositories/machine.repository';
+import { MachineStatus } from '../../../domain/value-objects/machine-status.vo';
+import { InvalidMachineException } from '../../../domain/exceptions/invalid-machine.exception';
+import { CreateMachineInput } from '../../dtos/create-machine.input';
+import { CreateMachineOutput } from '../../dtos/create-machine.output';
+import { MachineAppMapper } from '../../mappers/machine-app.mapper';
 
 @Injectable()
 export class CreateMachineUseCase {
@@ -22,11 +22,11 @@ export class CreateMachineUseCase {
       generateUUID(),
       input.code,
       input.name,
+      input.status ?? MachineStatus.OPERATIONAL,
+      input.usageHours ?? new Decimal(0),
       input.brand ?? null,
       input.model ?? null,
       input.serialNumber ?? null,
-      input.status ?? MachineStatus.OPERATIONAL,
-      input.usageHours ?? new Decimal(0),
       input.location ?? null,
       input.responsibleId ?? null,
       input.notes ?? null,

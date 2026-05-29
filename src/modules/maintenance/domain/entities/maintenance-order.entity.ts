@@ -1,4 +1,3 @@
-import { InvalidMaintenanceException } from '../exceptions/invalid-maintenance.exception';
 import { MaintenanceStatus } from '../value-objects/maintenance-status.vo';
 import { MaintenanceType } from '../value-objects/maintenance-type.vo';
 import { MaintenanceLocation } from '../value-objects/maintenance-location.vo';
@@ -40,7 +39,7 @@ export class MaintenanceOrder {
     technicianId: string | null = null,
     providerId: string | null = null,
     cost: Decimal | null = null,
-    currency: string = 'ARS',
+    currency: string = 'USD',
     description: string | null = null,
     observations: string | null = null,
     tenantId: string | null = null,
@@ -48,7 +47,6 @@ export class MaintenanceOrder {
     updatedAt: Date = new Date(),
     deletedAt: Date | null = null,
   ) {
-    if (!machineId) throw new InvalidMaintenanceException('Machine ID is required');
     this.id = id;
     this.machineId = machineId;
     this.type = type;
@@ -93,32 +91,28 @@ export class MaintenanceOrder {
   getDeletedAt(): Date | null { return this.deletedAt; }
 
   start(): void {
-    if (this.status === MaintenanceStatus.IN_PROGRESS) return;
+    if (this.status !== MaintenanceStatus.SCHEDULED) {
+      throw new Error('Can only start scheduled maintenance');
+    }
     this.status = MaintenanceStatus.IN_PROGRESS;
     this.startedAt = new Date();
     this.updatedAt = new Date();
   }
 
   complete(): void {
-    if (this.status !== MaintenanceStatus.IN_PROGRESS) {
-      throw new InvalidMaintenanceException('Can only complete orders in progress');
+    if (this.status !== MaintenanceStatus.IN_PROGRESS && this.status !== MaintenanceStatus.SCHEDULED) {
+      throw new Error('Can only complete in-progress or scheduled maintenance');
     }
     this.status = MaintenanceStatus.COMPLETED;
     this.completedAt = new Date();
     this.updatedAt = new Date();
   }
 
-  changeStatus(newStatus: MaintenanceStatus): void {
-    this.status = newStatus;
+  cancel(): void {
+    if (this.status === MaintenanceStatus.COMPLETED || this.status === MaintenanceStatus.CANCELLED) {
+      throw new Error('Cannot cancel completed or already cancelled maintenance');
+    }
+    this.status = MaintenanceStatus.CANCELLED;
     this.updatedAt = new Date();
-  }
-
-  assignTechnician(technicianId: string): void {
-    this.technicianId = technicianId;
-    this.updatedAt = new Date();
-  }
-
-  isCompleted(): boolean {
-    return this.status === MaintenanceStatus.COMPLETED;
   }
 }

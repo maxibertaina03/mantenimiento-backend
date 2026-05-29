@@ -1,0 +1,36 @@
+import { MaterialUnit } from '../value-objects/material-unit.vo';
+import { Decimal } from '@prisma/client/runtime/library';
+export declare class Material {
+    private id;
+    private code;
+    private name;
+    private description;
+    private unit;
+    private stock;
+    private minStock;
+    private location;
+    private tenantId;
+    private createdAt;
+    private updatedAt;
+    private deletedAt;
+    constructor(id: string, code: string, name: string, description?: string | null, unit?: MaterialUnit, stock?: Decimal, minStock?: Decimal, location?: string | null, tenantId?: string | null, createdAt?: Date, updatedAt?: Date, deletedAt?: Date | null);
+    private validateCode;
+    private validateName;
+    getId(): string;
+    getCode(): string;
+    getName(): string;
+    getDescription(): string | null;
+    getUnit(): MaterialUnit;
+    getStock(): Decimal;
+    getMinStock(): Decimal;
+    getLocation(): string | null;
+    getTenantId(): string | null;
+    getCreatedAt(): Date;
+    getUpdatedAt(): Date;
+    getDeletedAt(): Date | null;
+    addStock(quantity: Decimal): void;
+    removeStock(quantity: Decimal): void;
+    isBelowMinimum(): boolean;
+    changeName(newName: string): void;
+    updateLocation(location: string | null): void;
+}

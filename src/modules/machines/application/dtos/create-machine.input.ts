@@ -4,10 +4,10 @@ import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
 export class CreateMachineInput {
   code!: string;
   name!: string;
+  status?: MachineStatus;
   brand?: string | null;
   model?: string | null;
   serialNumber?: string | null;
-  status?: MachineStatus;
   usageHours?: Decimal;
   location?: string | null;
   responsibleId?: string | null;

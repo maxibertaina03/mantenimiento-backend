@@ -23,10 +23,6 @@ export class MachineStatusVO {
     return this.value === MachineStatus.OPERATIONAL;
   }
 
-  isInMaintenance(): boolean {
-    return this.value === MachineStatus.INTERNAL_MAINTENANCE || this.value === MachineStatus.EXTERNAL_MAINTENANCE;
-  }
-
   equals(other: MachineStatusVO): boolean {
     return this.value === other.value;
   }

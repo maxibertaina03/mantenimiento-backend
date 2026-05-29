@@ -56,6 +56,8 @@ export class ToolsController {
     @GetTenantId() tenantId: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
+    @Query('status') _status?: string,
+    @Query('search') _search?: string,
   ) {
     const output = await this.listTools.execute({
       tenantId,

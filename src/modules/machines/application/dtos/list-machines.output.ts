@@ -1,5 +1,5 @@
-import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
 import { Decimal } from '@prisma/client/runtime/library';
+import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
 
 export class MachineListItemDto {
   id!: string;
@@ -8,7 +8,7 @@ export class MachineListItemDto {
   status!: MachineStatus;
   usageHours!: Decimal;
   location!: string | null;
-  createdAt!: Date;
+  brand!: string | null;
 }
 
 export class ListMachinesOutput {

@@ -10,6 +10,10 @@ exports.IamModule = void 0;
 const common_1 = require("@nestjs/common");
 const iam_controller_1 = require("./presentation/iam.controller");
 const get_current_user_use_case_1 = require("./application/get-current-user.use-case");
+const list_users_use_case_1 = require("./application/list-users.use-case");
+const get_user_use_case_1 = require("./application/get-user.use-case");
+const update_user_use_case_1 = require("./application/update-user.use-case");
+const delete_user_use_case_1 = require("./application/delete-user.use-case");
 const user_repository_1 = require("./domain/user.repository");
 const prisma_user_repository_1 = require("./infrastructure/prisma-user.repository");
 let IamModule = class IamModule {
@@ -20,9 +24,13 @@ exports.IamModule = IamModule = __decorate([
         controllers: [iam_controller_1.IamController],
         providers: [
             get_current_user_use_case_1.GetCurrentUserUseCase,
+            list_users_use_case_1.ListUsersUseCase,
+            get_user_use_case_1.GetUserUseCase,
+            update_user_use_case_1.UpdateUserUseCase,
+            delete_user_use_case_1.DeleteUserUseCase,
             { provide: user_repository_1.USER_REPOSITORY, useClass: prisma_user_repository_1.PrismaUserRepository },
         ],
-        exports: [get_current_user_use_case_1.GetCurrentUserUseCase],
+        exports: [get_current_user_use_case_1.GetCurrentUserUseCase, list_users_use_case_1.ListUsersUseCase, get_user_use_case_1.GetUserUseCase, update_user_use_case_1.UpdateUserUseCase, delete_user_use_case_1.DeleteUserUseCase],
     })
 ], IamModule);
 //# sourceMappingURL=iam.module.js.map

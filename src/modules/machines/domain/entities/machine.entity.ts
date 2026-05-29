@@ -25,11 +25,11 @@ export class Machine {
     id: string,
     code: string,
     name: string,
+    status: MachineStatus = MachineStatus.OPERATIONAL,
+    usageHours: Decimal = new Decimal(0),
     brand: string | null = null,
     model: string | null = null,
     serialNumber: string | null = null,
-    status: MachineStatus = MachineStatus.OPERATIONAL,
-    usageHours: Decimal = new Decimal(0),
     location: string | null = null,
     responsibleId: string | null = null,
     notes: string | null = null,
@@ -79,95 +79,27 @@ export class Machine {
     }
   }
 
-  getId(): string {
-    return this.id;
-  }
-
-  getCode(): string {
-    return this.code;
-  }
-
-  getName(): string {
-    return this.name;
-  }
-
-  getBrand(): string | null {
-    return this.brand;
-  }
-
-  getModel(): string | null {
-    return this.model;
-  }
-
-  getSerialNumber(): string | null {
-    return this.serialNumber;
-  }
-
-  getStatus(): MachineStatus {
-    return this.status;
-  }
-
-  getUsageHours(): Decimal {
-    return this.usageHours;
-  }
-
-  getLocation(): string | null {
-    return this.location;
-  }
-
-  getResponsibleId(): string | null {
-    return this.responsibleId;
-  }
-
-  getNotes(): string | null {
-    return this.notes;
-  }
-
-  getPreventiveIntervalHours(): Decimal | null {
-    return this.preventiveIntervalHours;
-  }
-
-  getLastPreventiveAtHours(): Decimal | null {
-    return this.lastPreventiveAtHours;
-  }
-
-  getTenantId(): string | null {
-    return this.tenantId;
-  }
-
-  getCreatedAt(): Date {
-    return this.createdAt;
-  }
-
-  getUpdatedAt(): Date {
-    return this.updatedAt;
-  }
-
-  getDeletedAt(): Date | null {
-    return this.deletedAt;
-  }
+  getId(): string { return this.id; }
+  getCode(): string { return this.code; }
+  getName(): string { return this.name; }
+  getBrand(): string | null { return this.brand; }
+  getModel(): string | null { return this.model; }
+  getSerialNumber(): string | null { return this.serialNumber; }
+  getStatus(): MachineStatus { return this.status; }
+  getUsageHours(): Decimal { return this.usageHours; }
+  getLocation(): string | null { return this.location; }
+  getResponsibleId(): string | null { return this.responsibleId; }
+  getNotes(): string | null { return this.notes; }
+  getPreventiveIntervalHours(): Decimal | null { return this.preventiveIntervalHours; }
+  getLastPreventiveAtHours(): Decimal | null { return this.lastPreventiveAtHours; }
+  getTenantId(): string | null { return this.tenantId; }
+  getCreatedAt(): Date { return this.createdAt; }
+  getUpdatedAt(): Date { return this.updatedAt; }
+  getDeletedAt(): Date | null { return this.deletedAt; }
 
   changeName(newName: string): void {
     this.validateName(newName);
     this.name = newName;
-    this.updatedAt = new Date();
-  }
-
-  changeStatus(newStatus: MachineStatus): void {
-    this.status = newStatus;
-    this.updatedAt = new Date();
-  }
-
-  updateUsageHours(newHours: Decimal): void {
-    if (newHours.lessThan(this.usageHours)) {
-      throw new InvalidMachineException('Usage hours cannot be decreased');
-    }
-    this.usageHours = newHours;
-    this.updatedAt = new Date();
-  }
-
-  setResponsible(responsibleId: string | null): void {
-    this.responsibleId = responsibleId;
     this.updatedAt = new Date();
   }
 
@@ -176,20 +108,13 @@ export class Machine {
     this.updatedAt = new Date();
   }
 
-  recordPreventiveMaintenance(currentHours: Decimal): void {
-    this.lastPreventiveAtHours = currentHours;
+  changeStatus(newStatus: MachineStatus): void {
+    this.status = newStatus;
     this.updatedAt = new Date();
   }
 
-  isOperational(): boolean {
-    return this.status === MachineStatus.OPERATIONAL;
-  }
-
-  isBelowPreventiveThreshold(): boolean {
-    if (!this.preventiveIntervalHours || !this.lastPreventiveAtHours) {
-      return false;
-    }
-    const nextPreventiveHours = this.lastPreventiveAtHours.plus(this.preventiveIntervalHours);
-    return this.usageHours.greaterThanOrEqualTo(nextPreventiveHours);
+  logUsageHours(hours: Decimal): void {
+    this.usageHours = this.usageHours.add(hours);
+    this.updatedAt = new Date();
   }
 }

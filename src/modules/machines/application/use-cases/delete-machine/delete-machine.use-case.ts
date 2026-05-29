@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMachineRepository, MACHINE_REPOSITORY } from '../../domain/repositories/machine.repository';
-import { MachineNotFoundException } from '../../domain/exceptions/machine-not-found.exception';
+import { IMachineRepository, MACHINE_REPOSITORY } from '../../../domain/repositories/machine.repository';
+import { MachineNotFoundException } from '../../../domain/exceptions/machine-not-found.exception';
 
 @Injectable()
 export class DeleteMachineUseCase {

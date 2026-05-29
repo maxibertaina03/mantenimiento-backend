@@ -1,14 +1,14 @@
-import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
 import { Decimal } from '@prisma/client/runtime/library';
+import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
 
 export class CreateMachineOutput {
   id!: string;
   code!: string;
   name!: string;
+  status!: MachineStatus;
   brand!: string | null;
   model!: string | null;
   serialNumber!: string | null;
-  status!: MachineStatus;
   usageHours!: Decimal;
   location!: string | null;
   responsibleId!: string | null;

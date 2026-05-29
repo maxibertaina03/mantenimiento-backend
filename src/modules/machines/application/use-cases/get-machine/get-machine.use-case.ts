@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMachineRepository, MACHINE_REPOSITORY } from '../../domain/repositories/machine.repository';
-import { MachineNotFoundException } from '../../domain/exceptions/machine-not-found.exception';
-import { CreateMachineOutput } from '../dtos/create-machine.output';
-import { MachineAppMapper } from '../mappers/machine-app.mapper';
+import { IMachineRepository, MACHINE_REPOSITORY } from '../../../domain/repositories/machine.repository';
+import { MachineNotFoundException } from '../../../domain/exceptions/machine-not-found.exception';
+import { CreateMachineOutput } from '../../dtos/create-machine.output';
+import { MachineAppMapper } from '../../mappers/machine-app.mapper';
 
 @Injectable()
 export class GetMachineUseCase {

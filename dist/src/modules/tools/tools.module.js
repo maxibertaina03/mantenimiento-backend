@@ -8,36 +8,34 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolsModule = void 0;
 const common_1 = require("@nestjs/common");
-const tools_controller_1 = require("./presentation/tools.controller");
-const tool_repository_1 = require("./domain/tool.repository");
-const prisma_tool_repository_1 = require("./infrastructure/prisma-tool.repository");
-const register_tool_use_case_1 = require("./application/register-tool.use-case");
-const update_tool_use_case_1 = require("./application/update-tool.use-case");
-const change_tool_status_use_case_1 = require("./application/change-tool-status.use-case");
-const loan_tool_use_case_1 = require("./application/loan-tool.use-case");
-const return_tool_use_case_1 = require("./application/return-tool.use-case");
-const list_tools_use_case_1 = require("./application/list-tools.use-case");
-const get_tool_use_case_1 = require("./application/get-tool.use-case");
-const list_loans_use_case_1 = require("./application/list-loans.use-case");
-const delete_tool_use_case_1 = require("./application/delete-tool.use-case");
+const tools_controller_1 = require("./presentation/controllers/tools.controller");
+const create_tool_use_case_1 = require("./application/use-cases/create-tool/create-tool.use-case");
+const list_tools_use_case_1 = require("./application/use-cases/list-tools/list-tools.use-case");
+const get_tool_use_case_1 = require("./application/use-cases/get-tool/get-tool.use-case");
+const update_tool_use_case_1 = require("./application/use-cases/update-tool/update-tool.use-case");
+const delete_tool_use_case_1 = require("./application/use-cases/delete-tool/delete-tool.use-case");
+const prisma_tool_repository_1 = require("./infrastructure/repositories/prisma-tool.repository");
+const tool_repository_1 = require("./domain/repositories/tool.repository");
+const prisma_module_1 = require("../../infrastructure/prisma/prisma.module");
 let ToolsModule = class ToolsModule {
 };
 exports.ToolsModule = ToolsModule;
 exports.ToolsModule = ToolsModule = __decorate([
     (0, common_1.Module)({
+        imports: [prisma_module_1.PrismaModule],
         controllers: [tools_controller_1.ToolsController],
         providers: [
-            { provide: tool_repository_1.TOOL_REPOSITORY, useClass: prisma_tool_repository_1.PrismaToolRepository },
-            register_tool_use_case_1.RegisterToolUseCase,
-            update_tool_use_case_1.UpdateToolUseCase,
-            change_tool_status_use_case_1.ChangeToolStatusUseCase,
-            loan_tool_use_case_1.LoanToolUseCase,
-            return_tool_use_case_1.ReturnToolUseCase,
+            create_tool_use_case_1.CreateToolUseCase,
             list_tools_use_case_1.ListToolsUseCase,
             get_tool_use_case_1.GetToolUseCase,
-            list_loans_use_case_1.ListLoansUseCase,
+            update_tool_use_case_1.UpdateToolUseCase,
             delete_tool_use_case_1.DeleteToolUseCase,
+            {
+                provide: tool_repository_1.TOOL_REPOSITORY,
+                useClass: prisma_tool_repository_1.PrismaToolRepository,
+            },
         ],
+        exports: [create_tool_use_case_1.CreateToolUseCase, list_tools_use_case_1.ListToolsUseCase, get_tool_use_case_1.GetToolUseCase, update_tool_use_case_1.UpdateToolUseCase, delete_tool_use_case_1.DeleteToolUseCase],
     })
 ], ToolsModule);
 //# sourceMappingURL=tools.module.js.map

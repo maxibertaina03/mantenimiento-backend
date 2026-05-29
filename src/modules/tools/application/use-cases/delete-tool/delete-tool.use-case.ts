@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IToolRepository, TOOL_REPOSITORY } from '../../domain/repositories/tool.repository';
-import { ToolNotFoundException } from '../../domain/exceptions/tool-not-found.exception';
+import { IToolRepository, TOOL_REPOSITORY } from '../../../domain/repositories/tool.repository';
+import { ToolNotFoundException } from '../../../domain/exceptions/tool-not-found.exception';
 
 @Injectable()
 export class DeleteToolUseCase {

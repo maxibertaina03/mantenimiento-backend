@@ -1,7 +1,6 @@
 import { Machine as PrismaMachine, MachineStatus as PrismaMachineStatus } from '@prisma/client';
 import { Machine } from '../../domain/entities/machine.entity';
 import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
-import { Decimal } from '@prisma/client/runtime/library';
 
 export class PrismaMachineMapper {
   static toDomain(raw: PrismaMachine): Machine {
@@ -9,11 +8,11 @@ export class PrismaMachineMapper {
       raw.id,
       raw.code,
       raw.name,
+      raw.status as MachineStatus,
+      raw.usageHours,
       raw.brand,
       raw.model,
       raw.serialNumber,
-      raw.status as MachineStatus,
-      raw.usageHours,
       raw.location,
       raw.responsibleId,
       raw.notes,

@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMaintenanceOrderRepository, MAINTENANCE_ORDER_REPOSITORY } from '../../domain/repositories/maintenance-order.repository';
-import { ListMaintenanceOrdersInput } from '../dtos/list-maintenance-orders.input';
-import { ListMaintenanceOrdersOutput, MaintenanceOrderListItemDto } from '../dtos/list-maintenance-orders.output';
+import { IMaintenanceOrderRepository, MAINTENANCE_ORDER_REPOSITORY } from '../../../domain/repositories/maintenance-order.repository';
+import { ListMaintenanceOrdersInput } from '../../dtos/list-maintenance-orders.input';
+import { ListMaintenanceOrdersOutput, MaintenanceOrderListItemDto } from '../../dtos/list-maintenance-orders.output';
 
 @Injectable()
 export class ListMaintenanceOrdersUseCase {

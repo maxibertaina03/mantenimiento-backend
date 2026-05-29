@@ -1,12 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { v4 as generateUUID } from 'uuid';
-import { Provider } from '../../domain/entities/provider.entity';
-import { IProviderRepository, PROVIDER_REPOSITORY } from '../../domain/repositories/provider.repository';
-import { ProviderServiceType } from '../../domain/value-objects/provider-service-type.vo';
-import { InvalidProviderException } from '../../domain/exceptions/invalid-provider.exception';
-import { CreateProviderInput } from '../dtos/create-provider.input';
-import { CreateProviderOutput } from '../dtos/create-provider.output';
-import { ProviderAppMapper } from '../mappers/provider-app.mapper';
+import { Provider } from '../../../domain/entities/provider.entity';
+import { IProviderRepository, PROVIDER_REPOSITORY } from '../../../domain/repositories/provider.repository';
+import { ProviderServiceType } from '../../../domain/value-objects/provider-service-type.vo';
+import { InvalidProviderException } from '../../../domain/exceptions/invalid-provider.exception';
+import { CreateProviderInput } from '../../dtos/create-provider.input';
+import { CreateProviderOutput } from '../../dtos/create-provider.output';
+import { ProviderAppMapper } from '../../mappers/provider-app.mapper';
 
 @Injectable()
 export class CreateProviderUseCase {

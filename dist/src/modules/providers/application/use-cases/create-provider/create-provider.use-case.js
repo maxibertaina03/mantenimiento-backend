@@ -11,16 +11,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateProviderUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const uuid_1 = require("uuid");
-const provider_entity_1 = require("../../domain/entities/provider.entity");
-const provider_repository_1 = require("../../domain/repositories/provider.repository");
-const provider_service_type_vo_1 = require("../../domain/value-objects/provider-service-type.vo");
-const invalid_provider_exception_1 = require("../../domain/exceptions/invalid-provider.exception");
-const provider_app_mapper_1 = require("../mappers/provider-app.mapper");
+const provider_entity_1 = require("../../../domain/entities/provider.entity");
+const provider_repository_1 = require("../../../domain/repositories/provider.repository");
+const provider_service_type_vo_1 = require("../../../domain/value-objects/provider-service-type.vo");
+const invalid_provider_exception_1 = require("../../../domain/exceptions/invalid-provider.exception");
+const provider_app_mapper_1 = require("../../mappers/provider-app.mapper");
 let CreateProviderUseCase = class CreateProviderUseCase {
     repository;
     constructor(repository) {
@@ -40,6 +39,6 @@ exports.CreateProviderUseCase = CreateProviderUseCase;
 exports.CreateProviderUseCase = CreateProviderUseCase = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(provider_repository_1.PROVIDER_REPOSITORY)),
-    __metadata("design:paramtypes", [typeof (_a = typeof provider_repository_1.IProviderRepository !== "undefined" && provider_repository_1.IProviderRepository) === "function" ? _a : Object])
+    __metadata("design:paramtypes", [Object])
 ], CreateProviderUseCase);
 //# sourceMappingURL=create-provider.use-case.js.map

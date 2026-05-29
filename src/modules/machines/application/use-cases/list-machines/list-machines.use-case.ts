@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMachineRepository, MACHINE_REPOSITORY } from '../../domain/repositories/machine.repository';
-import { ListMachinesInput } from '../dtos/list-machines.input';
-import { ListMachinesOutput, MachineListItemDto } from '../dtos/list-machines.output';
+import { IMachineRepository, MACHINE_REPOSITORY } from '../../../domain/repositories/machine.repository';
+import { ListMachinesInput } from '../../dtos/list-machines.input';
+import { ListMachinesOutput, MachineListItemDto } from '../../dtos/list-machines.output';
 
 @Injectable()
 export class ListMachinesUseCase {
@@ -24,7 +24,7 @@ export class ListMachinesUseCase {
       status: m.getStatus(),
       usageHours: m.getUsageHours(),
       location: m.getLocation(),
-      createdAt: m.getCreatedAt(),
+      brand: m.getBrand(),
     }));
 
     return {

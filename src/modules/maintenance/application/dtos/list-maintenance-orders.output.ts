@@ -1,5 +1,5 @@
-import { MaintenanceStatus } from '../../domain/value-objects/maintenance-status.vo';
 import { MaintenanceType } from '../../domain/value-objects/maintenance-type.vo';
+import { MaintenanceStatus } from '../../domain/value-objects/maintenance-status.vo';
 import { MaintenanceLocation } from '../../domain/value-objects/maintenance-location.vo';
 
 export class MaintenanceOrderListItemDto {
@@ -8,8 +8,8 @@ export class MaintenanceOrderListItemDto {
   type!: MaintenanceType;
   status!: MaintenanceStatus;
   location!: MaintenanceLocation;
-  scheduledFor?: Date | null;
-  startedAt?: Date | null;
+  scheduledFor!: Date | null;
+  startedAt!: Date | null;
   createdAt!: Date;
 }
 

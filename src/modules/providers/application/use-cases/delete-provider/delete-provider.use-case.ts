@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IProviderRepository, PROVIDER_REPOSITORY } from '../../domain/repositories/provider.repository';
-import { ProviderNotFoundException } from '../../domain/exceptions/provider-not-found.exception';
+import { IProviderRepository, PROVIDER_REPOSITORY } from '../../../domain/repositories/provider.repository';
+import { ProviderNotFoundException } from '../../../domain/exceptions/provider-not-found.exception';
 
 @Injectable()
 export class DeleteProviderUseCase {

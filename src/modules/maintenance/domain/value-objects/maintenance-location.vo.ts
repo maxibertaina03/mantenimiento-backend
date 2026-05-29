@@ -4,12 +4,20 @@ export enum MaintenanceLocation {
 }
 
 export class MaintenanceLocationVO {
-  constructor(private readonly value: MaintenanceLocation) {
+  private readonly value: MaintenanceLocation;
+
+  constructor(value: MaintenanceLocation) {
     if (!Object.values(MaintenanceLocation).includes(value)) {
       throw new Error(`Invalid maintenance location: ${value}`);
     }
+    this.value = value;
   }
-  getValue(): MaintenanceLocation { return this.value; }
-  isExternal(): boolean { return this.value === MaintenanceLocation.EXTERNAL; }
-  equals(other: MaintenanceLocationVO): boolean { return this.value === other.value; }
+
+  getValue(): MaintenanceLocation {
+    return this.value;
+  }
+
+  equals(other: MaintenanceLocationVO): boolean {
+    return this.value === other.value;
+  }
 }

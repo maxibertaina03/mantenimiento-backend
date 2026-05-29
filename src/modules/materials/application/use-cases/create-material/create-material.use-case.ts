@@ -1,13 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { v4 as generateUUID } from 'uuid';
 import { Decimal } from '@prisma/client/runtime/library';
-import { Material } from '../../domain/entities/material.entity';
-import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../domain/repositories/material.repository';
-import { MaterialUnit } from '../../domain/value-objects/material-unit.vo';
-import { InvalidMaterialException } from '../../domain/exceptions/invalid-material.exception';
-import { CreateMaterialInput } from '../dtos/create-material.input';
-import { CreateMaterialOutput } from '../dtos/create-material.output';
-import { MaterialAppMapper } from '../mappers/material-app.mapper';
+import { Material } from '../../../domain/entities/material.entity';
+import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../../domain/repositories/material.repository';
+import { MaterialUnit } from '../../../domain/value-objects/material-unit.vo';
+import { InvalidMaterialException } from '../../../domain/exceptions/invalid-material.exception';
+import { CreateMaterialInput } from '../../dtos/create-material.input';
+import { CreateMaterialOutput } from '../../dtos/create-material.output';
+import { MaterialAppMapper } from '../../mappers/material-app.mapper';
 
 @Injectable()
 export class CreateMaterialUseCase {

@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../domain/repositories/material.repository';
-import { MaterialNotFoundException } from '../../domain/exceptions/material-not-found.exception';
-import { CreateMaterialOutput } from '../dtos/create-material.output';
-import { MaterialAppMapper } from '../mappers/material-app.mapper';
+import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../../domain/repositories/material.repository';
+import { MaterialNotFoundException } from '../../../domain/exceptions/material-not-found.exception';
+import { CreateMaterialOutput } from '../../dtos/create-material.output';
+import { MaterialAppMapper } from '../../mappers/material-app.mapper';
 
 export class UpdateMaterialInput {
   id!: string;

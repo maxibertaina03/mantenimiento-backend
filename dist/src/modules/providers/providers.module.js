@@ -10,6 +10,10 @@ exports.ProvidersModule = void 0;
 const common_1 = require("@nestjs/common");
 const providers_controller_1 = require("./presentation/controllers/providers.controller");
 const create_provider_use_case_1 = require("./application/use-cases/create-provider/create-provider.use-case");
+const list_providers_use_case_1 = require("./application/use-cases/list-providers/list-providers.use-case");
+const get_provider_use_case_1 = require("./application/use-cases/get-provider/get-provider.use-case");
+const update_provider_use_case_1 = require("./application/use-cases/update-provider/update-provider.use-case");
+const delete_provider_use_case_1 = require("./application/use-cases/delete-provider/delete-provider.use-case");
 const prisma_provider_repository_1 = require("./infrastructure/repositories/prisma-provider.repository");
 const provider_repository_1 = require("./domain/repositories/provider.repository");
 const prisma_module_1 = require("../../infrastructure/prisma/prisma.module");
@@ -22,12 +26,16 @@ exports.ProvidersModule = ProvidersModule = __decorate([
         controllers: [providers_controller_1.ProvidersController],
         providers: [
             create_provider_use_case_1.CreateProviderUseCase,
+            list_providers_use_case_1.ListProvidersUseCase,
+            get_provider_use_case_1.GetProviderUseCase,
+            update_provider_use_case_1.UpdateProviderUseCase,
+            delete_provider_use_case_1.DeleteProviderUseCase,
             {
                 provide: provider_repository_1.PROVIDER_REPOSITORY,
                 useClass: prisma_provider_repository_1.PrismaProviderRepository,
             },
         ],
-        exports: [create_provider_use_case_1.CreateProviderUseCase],
+        exports: [create_provider_use_case_1.CreateProviderUseCase, list_providers_use_case_1.ListProvidersUseCase, get_provider_use_case_1.GetProviderUseCase, update_provider_use_case_1.UpdateProviderUseCase, delete_provider_use_case_1.DeleteProviderUseCase],
     })
 ], ProvidersModule);
 //# sourceMappingURL=providers.module.js.map

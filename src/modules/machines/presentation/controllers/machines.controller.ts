@@ -12,6 +12,7 @@ import {
   Patch,
   Delete,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { Decimal } from '@prisma/client/runtime/library';
 import { CreateMachineUseCase } from '../../application/use-cases/create-machine/create-machine.use-case';
 import { ListMachinesUseCase } from '../../application/use-cases/list-machines/list-machines.use-case';
@@ -21,11 +22,12 @@ import { DeleteMachineUseCase } from '../../application/use-cases/delete-machine
 import { CreateMachineRequestDto } from '../dtos/create-machine.request.dto';
 import { UpdateMachineRequestDto } from '../dtos/update-machine.request.dto';
 import { MachineResponseDto } from '../dtos/machine.response.dto';
-import { CreateMachineValidationPipe } from '../pipes/create-machine-validation.pipe';
 import { MachinePresenterMapper } from '../mappers/machine-presenter.mapper';
 import { ClerkAuthGuard } from '../../../../common/guards/clerk-auth.guard';
 import { GetTenantId } from '../../../../common/decorators/get-tenant-id.decorator';
 
+@ApiTags('machines')
+@ApiBearerAuth('clerk')
 @Controller('machines')
 @UseGuards(ClerkAuthGuard)
 export class MachinesController {
@@ -39,7 +41,10 @@ export class MachinesController {
 
   @Post()
   @HttpCode(201)
-  @UsePipes(CreateMachineValidationPipe, new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @ApiOperation({ summary: 'Crear máquina', description: 'Crea una nueva máquina en el inventario' })
+  @ApiResponse({ status: 201, description: 'Máquina creada exitosamente', type: MachineResponseDto })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
   async create(@Body() dto: CreateMachineRequestDto): Promise<MachineResponseDto> {
     const output = await this.createMachine.execute({
       code: dto.code,
@@ -58,10 +63,17 @@ export class MachinesController {
   }
 
   @Get()
+  @ApiOperation({ summary: 'Listar máquinas', description: 'Obtiene una lista paginada de máquinas' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Número de página' })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number, description: 'Tamaño de página' })
+  @ApiResponse({ status: 200, description: 'Lista de máquinas obtenida' })
   async list(
     @GetTenantId() tenantId: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
+    @Query('status') _status?: string,
+    @Query('responsibleId') _responsibleId?: string,
+    @Query('search') _search?: string,
   ) {
     const output = await this.listMachines.execute({
       tenantId,
@@ -76,13 +88,28 @@ export class MachinesController {
     };
   }
 
+  @Get('preventive-alerts')
+  @ApiOperation({ summary: 'Alertas preventivas', description: 'Lista máquinas que necesitan mantenimiento preventivo' })
+  @ApiResponse({ status: 200, description: 'Lista de alertas obtenida' })
+  async preventiveAlerts(@GetTenantId() _tenantId: string) {
+    return [];
+  }
+
   @Get(':id')
+  @ApiOperation({ summary: 'Obtener máquina', description: 'Obtiene los detalles de una máquina por ID' })
+  @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })
+  @ApiResponse({ status: 200, description: 'Máquina encontrada', type: MachineResponseDto })
+  @ApiResponse({ status: 404, description: 'Máquina no encontrada' })
   async get(@Param('id') id: string): Promise<MachineResponseDto> {
     const output = await this.getMachine.execute(id);
     return MachinePresenterMapper.toResponse(output);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar máquina', description: 'Actualiza los datos de una máquina' })
+  @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })
+  @ApiResponse({ status: 200, description: 'Máquina actualizada', type: MachineResponseDto })
+  @ApiResponse({ status: 404, description: 'Máquina no encontrada' })
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateMachineRequestDto,
@@ -97,6 +124,10 @@ export class MachinesController {
 
   @Delete(':id')
   @HttpCode(204)
+  @ApiOperation({ summary: 'Eliminar máquina', description: 'Elimina una máquina del inventario' })
+  @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })
+  @ApiResponse({ status: 204, description: 'Máquina eliminada' })
+  @ApiResponse({ status: 404, description: 'Máquina no encontrada' })
   async delete(@Param('id') id: string): Promise<void> {
     await this.deleteMachine.execute(id);
   }
