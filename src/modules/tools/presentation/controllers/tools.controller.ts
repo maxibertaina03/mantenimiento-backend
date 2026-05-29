@@ -5,6 +5,9 @@ import { ListToolsUseCase } from '../../application/use-cases/list-tools/list-to
 import { GetToolUseCase } from '../../application/use-cases/get-tool/get-tool.use-case';
 import { UpdateToolUseCase } from '../../application/use-cases/update-tool/update-tool.use-case';
 import { DeleteToolUseCase } from '../../application/use-cases/delete-tool/delete-tool.use-case';
+import { LoanToolUseCase } from '../../application/use-cases/loan-tool/loan-tool.use-case';
+import { ReturnToolUseCase } from '../../application/use-cases/return-tool/return-tool.use-case';
+import { ListLoansUseCase } from '../../application/use-cases/list-loans/list-loans.use-case';
 import { ToolStatus } from '../../domain/value-objects/tool-status.vo';
 import { CreateToolRequestDto } from '../dtos/create-tool.request.dto';
 import { UpdateToolRequestDto } from '../dtos/update-tool.request.dto';
@@ -24,6 +27,9 @@ export class ToolsController {
     private readonly getTool: GetToolUseCase,
     private readonly updateTool: UpdateToolUseCase,
     private readonly deleteTool: DeleteToolUseCase,
+    private readonly loanTool: LoanToolUseCase,
+    private readonly returnTool: ReturnToolUseCase,
+    private readonly listLoans: ListLoansUseCase,
   ) {}
 
   @Post()
@@ -89,8 +95,46 @@ export class ToolsController {
   @ApiOperation({ summary: 'Préstamos de la herramienta', description: 'Lista los préstamos de una herramienta' })
   @ApiParam({ name: 'id', description: 'ID de la herramienta', type: String })
   @ApiResponse({ status: 200, description: 'Préstamos obtenidos' })
-  async loans(@Param('id') _id: string) {
-    return [];
+  async loans(
+    @Param('id') id: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    return this.listLoans.execute({
+      toolId: id,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
+    });
+  }
+
+  @Post(':id/loans')
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Prestar herramienta', description: 'Crea un préstamo y marca la herramienta como ON_LOAN' })
+  @ApiParam({ name: 'id', description: 'ID de la herramienta', type: String })
+  @ApiResponse({ status: 201, description: 'Préstamo creado' })
+  @ApiResponse({ status: 400, description: 'Herramienta no disponible' })
+  async createLoan(
+    @Param('id') id: string,
+    @Body() body: { responsibleId: string; expectedAt?: string | null; notes?: string | null },
+    @GetTenantId() tenantId: string,
+  ) {
+    return this.loanTool.execute({
+      toolId: id,
+      responsibleId: body.responsibleId,
+      expectedAt: body.expectedAt ? new Date(body.expectedAt) : null,
+      notes: body.notes ?? null,
+      tenantId: tenantId ?? null,
+    });
+  }
+
+  @Post(':id/return')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Devolver herramienta', description: 'Cierra el préstamo activo y marca la herramienta AVAILABLE' })
+  @ApiParam({ name: 'id', description: 'ID de la herramienta', type: String })
+  @ApiResponse({ status: 200, description: 'Herramienta devuelta' })
+  @ApiResponse({ status: 400, description: 'No hay préstamo activo' })
+  async returnLoan(@Param('id') id: string) {
+    return this.returnTool.execute(id);
   }
 
   @Patch(':id')
