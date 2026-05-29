@@ -19,6 +19,9 @@ import { ListMachinesUseCase } from '../../application/use-cases/list-machines/l
 import { GetMachineUseCase } from '../../application/use-cases/get-machine/get-machine.use-case';
 import { UpdateMachineUseCase } from '../../application/use-cases/update-machine/update-machine.use-case';
 import { DeleteMachineUseCase } from '../../application/use-cases/delete-machine/delete-machine.use-case';
+import { LogHoursUseCase } from '../../application/use-cases/log-hours/log-hours.use-case';
+import { ListUsageLogsUseCase } from '../../application/use-cases/list-usage-logs/list-usage-logs.use-case';
+import { ChangeMachineStatusUseCase } from '../../application/use-cases/change-machine-status/change-machine-status.use-case';
 import { MachineStatus } from '../../domain/value-objects/machine-status.vo';
 import { CreateMachineRequestDto } from '../dtos/create-machine.request.dto';
 import { UpdateMachineRequestDto } from '../dtos/update-machine.request.dto';
@@ -26,6 +29,7 @@ import { MachineResponseDto } from '../dtos/machine.response.dto';
 import { MachinePresenterMapper } from '../mappers/machine-presenter.mapper';
 import { ClerkAuthGuard } from '../../../../common/guards/clerk-auth.guard';
 import { GetTenantId } from '../../../../common/decorators/get-tenant-id.decorator';
+import { CurrentUser, type AuthenticatedUser } from '../../../../common/decorators/current-user.decorator';
 
 @ApiTags('machines')
 @ApiBearerAuth('clerk')
@@ -38,6 +42,9 @@ export class MachinesController {
     private readonly getMachine: GetMachineUseCase,
     private readonly updateMachine: UpdateMachineUseCase,
     private readonly deleteMachine: DeleteMachineUseCase,
+    private readonly logHours: LogHoursUseCase,
+    private readonly listUsageLogs: ListUsageLogsUseCase,
+    private readonly changeStatus: ChangeMachineStatusUseCase,
   ) {}
 
   @Post()
@@ -113,8 +120,54 @@ export class MachinesController {
   @ApiOperation({ summary: 'Logs de uso de máquina', description: 'Lista los registros de horas de uso' })
   @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })
   @ApiResponse({ status: 200, description: 'Logs de uso obtenidos' })
-  async usageLogs(@Param('id') _id: string) {
-    return [];
+  async usageLogs(
+    @Param('id') id: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    return this.listUsageLogs.execute({
+      machineId: id,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
+    });
+  }
+
+  @Post(':id/usage-logs')
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Registrar horas de uso', description: 'Registra la lectura del contador de horas actual' })
+  @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })
+  @ApiResponse({ status: 201, description: 'Lectura registrada' })
+  @ApiResponse({ status: 400, description: 'hoursAfter < lectura actual' })
+  async createUsageLog(
+    @Param('id') id: string,
+    @Body() body: { hoursAfter: string; notes?: string | null },
+    @CurrentUser() user: AuthenticatedUser,
+    @GetTenantId() tenantId: string,
+  ) {
+    return this.logHours.execute({
+      machineId: id,
+      hoursAfter: new Decimal(body.hoursAfter),
+      notes: body.notes ?? null,
+      createdById: user.id,
+      tenantId: tenantId ?? null,
+    });
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Cambiar estado', description: 'Cambia el estado operativo de la máquina' })
+  @ApiParam({ name: 'id', description: 'ID de la máquina', type: String })
+  @ApiResponse({ status: 200, description: 'Estado actualizado', type: MachineResponseDto })
+  @ApiResponse({ status: 404, description: 'Máquina no encontrada' })
+  async patchStatus(
+    @Param('id') id: string,
+    @Body() body: { status: MachineStatus; reason?: string },
+  ): Promise<MachineResponseDto> {
+    const output = await this.changeStatus.execute({
+      id,
+      status: body.status,
+      reason: body.reason,
+    });
+    return MachinePresenterMapper.toResponse(output);
   }
 
   @Patch(':id')
