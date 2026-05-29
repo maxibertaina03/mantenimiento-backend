@@ -59,11 +59,11 @@ export class MaterialsController {
   ) {
     const output = await this.listMaterials.execute({
       tenantId,
-      page,
-      pageSize,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
     });
     return {
-      items: output.items.map((item) => MaterialPresenterMapper.toResponse(item as any)),
+      items: output.items.map((item) => MaterialPresenterMapper.toResponse(item)),
       total: output.total,
       page: output.page,
       pageSize: output.pageSize,

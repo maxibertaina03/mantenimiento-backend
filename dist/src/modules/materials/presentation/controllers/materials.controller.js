@@ -55,8 +55,8 @@ let MaterialsController = class MaterialsController {
     async list(tenantId, page, pageSize, _search, _lowStockOnly) {
         const output = await this.listMaterials.execute({
             tenantId,
-            page,
-            pageSize,
+            page: page ? Number(page) : undefined,
+            pageSize: pageSize ? Number(pageSize) : undefined,
         });
         return {
             items: output.items.map((item) => material_presenter_mapper_1.MaterialPresenterMapper.toResponse(item)),

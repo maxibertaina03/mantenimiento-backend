@@ -1,7 +1,15 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IMaterialRepository, MATERIAL_REPOSITORY } from '../../../domain/repositories/material.repository';
+import { MaterialAppMapper } from '../../mappers/material-app.mapper';
 import { ListMaterialsInput } from '../../dtos/list-materials.input';
-import { ListMaterialsOutput, MaterialListItemDto } from '../../dtos/list-materials.output';
+import type { CreateMaterialOutput } from '../../dtos/create-material.output';
+
+export interface ListMaterialsOutput {
+  items: CreateMaterialOutput[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 @Injectable()
 export class ListMaterialsUseCase {
@@ -13,26 +21,19 @@ export class ListMaterialsUseCase {
   async execute(input: ListMaterialsInput): Promise<ListMaterialsOutput> {
     const materials = await this.repository.findAll(input.tenantId);
 
-    const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-    const end = start + (input.pageSize ?? 10);
+    const page = Number(input.page) > 0 ? Number(input.page) : 1;
+    const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
     const paginatedMaterials = materials.slice(start, end);
 
-    const items: MaterialListItemDto[] = paginatedMaterials.map((m) => ({
-      id: m.getId(),
-      code: m.getCode(),
-      name: m.getName(),
-      unit: m.getUnit(),
-      stock: m.getStock(),
-      minStock: m.getMinStock(),
-      location: m.getLocation(),
-      createdAt: m.getCreatedAt(),
-    }));
+    const items = paginatedMaterials.map((m) => MaterialAppMapper.toOutput(m));
 
     return {
       items,
       total: materials.length,
-      page: input.page ?? 1,
-      pageSize: input.pageSize ?? 10,
+      page,
+      pageSize,
     };
   }
 }

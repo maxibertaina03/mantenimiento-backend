@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListMachinesUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const machine_repository_1 = require("../../../domain/repositories/machine.repository");
+const machine_app_mapper_1 = require("../../mappers/machine-app.mapper");
 let ListMachinesUseCase = class ListMachinesUseCase {
     repository;
     constructor(repository) {
@@ -22,23 +23,17 @@ let ListMachinesUseCase = class ListMachinesUseCase {
     }
     async execute(input) {
         const machines = await this.repository.findAll(input.tenantId);
-        const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-        const end = start + (input.pageSize ?? 10);
+        const page = Number(input.page) > 0 ? Number(input.page) : 1;
+        const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
         const paginatedMachines = machines.slice(start, end);
-        const items = paginatedMachines.map((m) => ({
-            id: m.getId(),
-            code: m.getCode(),
-            name: m.getName(),
-            status: m.getStatus(),
-            usageHours: m.getUsageHours(),
-            location: m.getLocation(),
-            brand: m.getBrand(),
-        }));
+        const items = paginatedMachines.map((m) => machine_app_mapper_1.MachineAppMapper.toOutput(m));
         return {
             items,
             total: machines.length,
-            page: input.page ?? 1,
-            pageSize: input.pageSize ?? 10,
+            page,
+            pageSize,
         };
     }
 };

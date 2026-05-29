@@ -59,8 +59,8 @@ let MachinesController = class MachinesController {
     async list(tenantId, page, pageSize, _status, _responsibleId, _search) {
         const output = await this.listMachines.execute({
             tenantId,
-            page,
-            pageSize,
+            page: page ? Number(page) : undefined,
+            pageSize: pageSize ? Number(pageSize) : undefined,
         });
         return {
             items: output.items.map((item) => machine_presenter_mapper_1.MachinePresenterMapper.toResponse(item)),

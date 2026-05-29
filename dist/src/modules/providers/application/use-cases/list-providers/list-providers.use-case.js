@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListProvidersUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const provider_repository_1 = require("../../../domain/repositories/provider.repository");
+const provider_app_mapper_1 = require("../../mappers/provider-app.mapper");
 let ListProvidersUseCase = class ListProvidersUseCase {
     repository;
     constructor(repository) {
@@ -22,24 +23,17 @@ let ListProvidersUseCase = class ListProvidersUseCase {
     }
     async execute(input) {
         const providers = await this.repository.findAll(input.tenantId);
-        const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-        const end = start + (input.pageSize ?? 10);
+        const page = Number(input.page) > 0 ? Number(input.page) : 1;
+        const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
         const paginatedProviders = providers.slice(start, end);
-        const items = paginatedProviders.map((p) => ({
-            id: p.getId(),
-            name: p.getName(),
-            contactName: p.getContactName(),
-            phone: p.getPhone(),
-            email: p.getEmail(),
-            serviceType: p.getServiceType(),
-            active: p.isActive(),
-            createdAt: p.getCreatedAt(),
-        }));
+        const items = paginatedProviders.map((p) => provider_app_mapper_1.ProviderAppMapper.toOutput(p));
         return {
             items,
             total: providers.length,
-            page: input.page ?? 1,
-            pageSize: input.pageSize ?? 10,
+            page,
+            pageSize,
         };
     }
 };

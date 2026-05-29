@@ -77,11 +77,11 @@ export class MachinesController {
   ) {
     const output = await this.listMachines.execute({
       tenantId,
-      page,
-      pageSize,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
     });
     return {
-      items: output.items.map((item) => MachinePresenterMapper.toResponse(item as any)),
+      items: output.items.map((item) => MachinePresenterMapper.toResponse(item)),
       total: output.total,
       page: output.page,
       pageSize: output.pageSize,

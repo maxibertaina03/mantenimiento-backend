@@ -56,8 +56,8 @@ let ProvidersController = class ProvidersController {
     async list(tenantId, page, pageSize, _search, _serviceType, _active) {
         const output = await this.listProviders.execute({
             tenantId,
-            page,
-            pageSize,
+            page: page ? Number(page) : undefined,
+            pageSize: pageSize ? Number(pageSize) : undefined,
         });
         return {
             items: output.items.map((item) => provider_presenter_mapper_1.ProviderPresenterMapper.toResponse(item)),

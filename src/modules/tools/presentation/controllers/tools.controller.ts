@@ -61,11 +61,11 @@ export class ToolsController {
   ) {
     const output = await this.listTools.execute({
       tenantId,
-      page,
-      pageSize,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
     });
     return {
-      items: output.items.map((item) => ToolPresenterMapper.toResponse(item as any)),
+      items: output.items.map((item) => ToolPresenterMapper.toResponse(item)),
       total: output.total,
       page: output.page,
       pageSize: output.pageSize,

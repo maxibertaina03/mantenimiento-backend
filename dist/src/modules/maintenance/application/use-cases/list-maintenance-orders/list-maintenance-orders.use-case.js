@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListMaintenanceOrdersUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const maintenance_order_repository_1 = require("../../../domain/repositories/maintenance-order.repository");
+const maintenance_order_app_mapper_1 = require("../../mappers/maintenance-order-app.mapper");
 let ListMaintenanceOrdersUseCase = class ListMaintenanceOrdersUseCase {
     repository;
     constructor(repository) {
@@ -22,24 +23,17 @@ let ListMaintenanceOrdersUseCase = class ListMaintenanceOrdersUseCase {
     }
     async execute(input) {
         const orders = await this.repository.findAll(input.tenantId);
-        const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-        const end = start + (input.pageSize ?? 10);
+        const page = Number(input.page) > 0 ? Number(input.page) : 1;
+        const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
         const paginatedOrders = orders.slice(start, end);
-        const items = paginatedOrders.map((o) => ({
-            id: o.getId(),
-            machineId: o.getMachineId(),
-            type: o.getType(),
-            status: o.getStatus(),
-            location: o.getLocation(),
-            scheduledFor: o.getScheduledFor(),
-            startedAt: o.getStartedAt(),
-            createdAt: o.getCreatedAt(),
-        }));
+        const items = paginatedOrders.map((o) => maintenance_order_app_mapper_1.MaintenanceOrderAppMapper.toOutput(o));
         return {
             items,
             total: orders.length,
-            page: input.page ?? 1,
-            pageSize: input.pageSize ?? 10,
+            page,
+            pageSize,
         };
     }
 };

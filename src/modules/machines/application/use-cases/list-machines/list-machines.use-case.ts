@@ -1,7 +1,15 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IMachineRepository, MACHINE_REPOSITORY } from '../../../domain/repositories/machine.repository';
+import { MachineAppMapper } from '../../mappers/machine-app.mapper';
 import { ListMachinesInput } from '../../dtos/list-machines.input';
-import { ListMachinesOutput, MachineListItemDto } from '../../dtos/list-machines.output';
+import type { CreateMachineOutput } from '../../dtos/create-machine.output';
+
+export interface ListMachinesOutput {
+  items: CreateMachineOutput[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 @Injectable()
 export class ListMachinesUseCase {
@@ -13,25 +21,19 @@ export class ListMachinesUseCase {
   async execute(input: ListMachinesInput): Promise<ListMachinesOutput> {
     const machines = await this.repository.findAll(input.tenantId);
 
-    const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-    const end = start + (input.pageSize ?? 10);
+    const page = Number(input.page) > 0 ? Number(input.page) : 1;
+    const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
     const paginatedMachines = machines.slice(start, end);
 
-    const items: MachineListItemDto[] = paginatedMachines.map((m) => ({
-      id: m.getId(),
-      code: m.getCode(),
-      name: m.getName(),
-      status: m.getStatus(),
-      usageHours: m.getUsageHours(),
-      location: m.getLocation(),
-      brand: m.getBrand(),
-    }));
+    const items = paginatedMachines.map((m) => MachineAppMapper.toOutput(m));
 
     return {
       items,
       total: machines.length,
-      page: input.page ?? 1,
-      pageSize: input.pageSize ?? 10,
+      page,
+      pageSize,
     };
   }
 }

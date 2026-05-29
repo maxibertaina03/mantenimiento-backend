@@ -74,11 +74,11 @@ export class ProvidersController {
   ) {
     const output = await this.listProviders.execute({
       tenantId,
-      page,
-      pageSize,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
     });
     return {
-      items: output.items.map((item) => ProviderPresenterMapper.toResponse(item as any)),
+      items: output.items.map((item) => ProviderPresenterMapper.toResponse(item)),
       total: output.total,
       page: output.page,
       pageSize: output.pageSize,

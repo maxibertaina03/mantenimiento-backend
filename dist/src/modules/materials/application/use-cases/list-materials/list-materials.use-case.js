@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListMaterialsUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const material_repository_1 = require("../../../domain/repositories/material.repository");
+const material_app_mapper_1 = require("../../mappers/material-app.mapper");
 let ListMaterialsUseCase = class ListMaterialsUseCase {
     repository;
     constructor(repository) {
@@ -22,24 +23,17 @@ let ListMaterialsUseCase = class ListMaterialsUseCase {
     }
     async execute(input) {
         const materials = await this.repository.findAll(input.tenantId);
-        const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-        const end = start + (input.pageSize ?? 10);
+        const page = Number(input.page) > 0 ? Number(input.page) : 1;
+        const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
         const paginatedMaterials = materials.slice(start, end);
-        const items = paginatedMaterials.map((m) => ({
-            id: m.getId(),
-            code: m.getCode(),
-            name: m.getName(),
-            unit: m.getUnit(),
-            stock: m.getStock(),
-            minStock: m.getMinStock(),
-            location: m.getLocation(),
-            createdAt: m.getCreatedAt(),
-        }));
+        const items = paginatedMaterials.map((m) => material_app_mapper_1.MaterialAppMapper.toOutput(m));
         return {
             items,
             total: materials.length,
-            page: input.page ?? 1,
-            pageSize: input.pageSize ?? 10,
+            page,
+            pageSize,
         };
     }
 };

@@ -1,7 +1,15 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IToolRepository, TOOL_REPOSITORY } from '../../../domain/repositories/tool.repository';
+import { ToolAppMapper } from '../../mappers/tool-app.mapper';
 import { ListToolsInput } from '../../dtos/list-tools.input';
-import { ListToolsOutput, ToolListItemDto } from '../../dtos/list-tools.output';
+import type { CreateToolOutput } from '../../dtos/create-tool.output';
+
+export interface ListToolsOutput {
+  items: CreateToolOutput[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 @Injectable()
 export class ListToolsUseCase {
@@ -13,26 +21,19 @@ export class ListToolsUseCase {
   async execute(input: ListToolsInput): Promise<ListToolsOutput> {
     const tools = await this.repository.findAll(input.tenantId);
 
-    const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-    const end = start + (input.pageSize ?? 10);
+    const page = Number(input.page) > 0 ? Number(input.page) : 1;
+    const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
     const paginatedTools = tools.slice(start, end);
 
-    const items: ToolListItemDto[] = paginatedTools.map((t) => ({
-      id: t.getId(),
-      code: t.getCode(),
-      name: t.getName(),
-      brand: t.getBrand(),
-      model: t.getModel(),
-      status: t.getStatus(),
-      location: t.getLocation(),
-      createdAt: t.getCreatedAt(),
-    }));
+    const items = paginatedTools.map((t) => ToolAppMapper.toOutput(t));
 
     return {
       items,
       total: tools.length,
-      page: input.page ?? 1,
-      pageSize: input.pageSize ?? 10,
+      page,
+      pageSize,
     };
   }
 }

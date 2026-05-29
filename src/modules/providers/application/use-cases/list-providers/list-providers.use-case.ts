@@ -1,7 +1,15 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IProviderRepository, PROVIDER_REPOSITORY } from '../../../domain/repositories/provider.repository';
+import { ProviderAppMapper } from '../../mappers/provider-app.mapper';
 import { ListProvidersInput } from '../../dtos/list-providers.input';
-import { ListProvidersOutput, ProviderListItemDto } from '../../dtos/list-providers.output';
+import type { CreateProviderOutput } from '../../dtos/create-provider.output';
+
+export interface ListProvidersOutput {
+  items: CreateProviderOutput[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 
 @Injectable()
 export class ListProvidersUseCase {
@@ -13,26 +21,19 @@ export class ListProvidersUseCase {
   async execute(input: ListProvidersInput): Promise<ListProvidersOutput> {
     const providers = await this.repository.findAll(input.tenantId);
 
-    const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-    const end = start + (input.pageSize ?? 10);
+    const page = Number(input.page) > 0 ? Number(input.page) : 1;
+    const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
     const paginatedProviders = providers.slice(start, end);
 
-    const items: ProviderListItemDto[] = paginatedProviders.map((p) => ({
-      id: p.getId(),
-      name: p.getName(),
-      contactName: p.getContactName(),
-      phone: p.getPhone(),
-      email: p.getEmail(),
-      serviceType: p.getServiceType(),
-      active: p.isActive(),
-      createdAt: p.getCreatedAt(),
-    }));
+    const items = paginatedProviders.map((p) => ProviderAppMapper.toOutput(p));
 
     return {
       items,
       total: providers.length,
-      page: input.page ?? 1,
-      pageSize: input.pageSize ?? 10,
+      page,
+      pageSize,
     };
   }
 }

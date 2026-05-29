@@ -1,3 +1,4 @@
+import { Decimal } from '@prisma/client/runtime/library';
 import { CreateMaintenanceOrderUseCase } from '../../application/use-cases/create-maintenance-order/create-maintenance-order.use-case';
 import { ListMaintenanceOrdersUseCase } from '../../application/use-cases/list-maintenance-orders/list-maintenance-orders.use-case';
 import { GetMaintenanceOrderUseCase } from '../../application/use-cases/get-maintenance-order/get-maintenance-order.use-case';
@@ -22,9 +23,18 @@ export declare class MaintenanceController {
             type: import("../../domain/value-objects/maintenance-type.vo").MaintenanceType;
             status: import("../../domain/value-objects/maintenance-status.vo").MaintenanceStatus;
             location: import("../../domain/value-objects/maintenance-location.vo").MaintenanceLocation;
+            externalLocation: string | null;
             scheduledFor: Date | null;
             startedAt: Date | null;
+            completedAt: Date | null;
+            technicianId: string | null;
+            providerId: string | null;
+            cost: Decimal | null;
+            currency: string;
+            description: string | null;
+            observations: string | null;
             createdAt: Date;
+            updatedAt: Date;
         }[];
         total: number;
         page: number;

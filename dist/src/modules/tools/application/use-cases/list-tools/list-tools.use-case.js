@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ListToolsUseCase = void 0;
 const common_1 = require("@nestjs/common");
 const tool_repository_1 = require("../../../domain/repositories/tool.repository");
+const tool_app_mapper_1 = require("../../mappers/tool-app.mapper");
 let ListToolsUseCase = class ListToolsUseCase {
     repository;
     constructor(repository) {
@@ -22,24 +23,17 @@ let ListToolsUseCase = class ListToolsUseCase {
     }
     async execute(input) {
         const tools = await this.repository.findAll(input.tenantId);
-        const start = ((input.page ?? 1) - 1) * (input.pageSize ?? 10);
-        const end = start + (input.pageSize ?? 10);
+        const page = Number(input.page) > 0 ? Number(input.page) : 1;
+        const pageSize = Number(input.pageSize) > 0 ? Number(input.pageSize) : 10;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
         const paginatedTools = tools.slice(start, end);
-        const items = paginatedTools.map((t) => ({
-            id: t.getId(),
-            code: t.getCode(),
-            name: t.getName(),
-            brand: t.getBrand(),
-            model: t.getModel(),
-            status: t.getStatus(),
-            location: t.getLocation(),
-            createdAt: t.getCreatedAt(),
-        }));
+        const items = paginatedTools.map((t) => tool_app_mapper_1.ToolAppMapper.toOutput(t));
         return {
             items,
             total: tools.length,
-            page: input.page ?? 1,
-            pageSize: input.pageSize ?? 10,
+            page,
+            pageSize,
         };
     }
 };

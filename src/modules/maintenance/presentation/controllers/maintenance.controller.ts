@@ -77,8 +77,8 @@ export class MaintenanceController {
   ) {
     const output = await this.listOrders.execute({
       tenantId,
-      page,
-      pageSize,
+      page: page ? Number(page) : undefined,
+      pageSize: pageSize ? Number(pageSize) : undefined,
     });
     return {
       items: output.items.map((item) => ({
@@ -87,9 +87,18 @@ export class MaintenanceController {
         type: item.type,
         status: item.status,
         location: item.location,
+        externalLocation: item.externalLocation,
         scheduledFor: item.scheduledFor,
         startedAt: item.startedAt,
+        completedAt: item.completedAt,
+        technicianId: item.technicianId,
+        providerId: item.providerId,
+        cost: item.cost,
+        currency: item.currency,
+        description: item.description,
+        observations: item.observations,
         createdAt: item.createdAt,
+        updatedAt: new Date(),
       })),
       total: output.total,
       page: output.page,

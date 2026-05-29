@@ -57,8 +57,8 @@ let ToolsController = class ToolsController {
     async list(tenantId, page, pageSize, _status, _search) {
         const output = await this.listTools.execute({
             tenantId,
-            page,
-            pageSize,
+            page: page ? Number(page) : undefined,
+            pageSize: pageSize ? Number(pageSize) : undefined,
         });
         return {
             items: output.items.map((item) => tool_presenter_mapper_1.ToolPresenterMapper.toResponse(item)),
